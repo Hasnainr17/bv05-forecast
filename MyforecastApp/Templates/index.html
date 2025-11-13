@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Toronto Weather Forecast</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; text-align: center; margin: 60px auto; max-width: 500px; background: linear-gradient(to bottom, #87CEEB, #E3F2FD); padding: 20px; }
+    .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
+    h1 { color: #1565C0; font-size: 28px; margin-bottom: 10px; }
+    h2 { color: #D32F2F; margin: 20px 0 15px; }
+    p { font-size: 19px; margin: 12px 0; }
+    strong { color: #1976D2; }
+    .footer { margin-top: 40px; color: #666; font-size: 14px; }
+    .loading { color: #999; font-style: italic; }
+  </style>
+</head>
+<body>
+  <h1>Toronto 16-Day Weather Forecast</h1>
+  <div class="card">
+    <h2>Today's Weather</h2>
+    <p><strong>Date:</strong> <span id="date" class="loading">Loading...</span></p>
+    <p><strong>Temperature:</strong> <span id="temp">?</span>°C</p>
+    <p><strong>Feels Like:</strong> <span id="feels">?</span>°C</p>
+    <p><strong>Humidity:</strong> <span id="hum">?</span>%</p>
+    <p><strong>Wind Speed:</strong> <span id="wind">?</span> km/h</p>
+  </div>
+  <div class="footer">
+    Powered by Open-Meteo • Hosted on Microsoft Azure
+  </div>
+
+  <script>
+    fetch('/api/weather')
+      .then(r => r.json())
+      .then(d => {
+        if (d.error) throw new Error(d.error);
+        document.getElementById('date').textContent = new Date(d.date).toLocaleDateString('en-CA');
+        document.getElementById('temp').textContent = d['temperature_2m_mean (°C)'];
+        document.getElementById('feels').textContent = d['apparent_temperature_mean (°C)'];
+        document.getElementById('hum').textContent = d['relative_humidity_2m_mean (%)'];
+        document.getElementById('wind').textContent = d['wind_speed_10m_mean (km/h)'];
+      })
+      .catch(err => {
+        document.querySelector('.card').innerHTML = `<p style="color:red">Error: ${err.message || 'Check internet'}</p>`;
+      });
+  </script>
+</body>
+</html>
