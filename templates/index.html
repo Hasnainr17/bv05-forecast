@@ -1,31 +1,82 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Toronto Weather Forecast</title>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BV05 · Toronto 16-Day Forecast</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Segoe UI', sans-serif; text-align: center; margin: 60px auto; max-width: 500px; background: linear-gradient(to bottom, #87CEEB, #E3F2FD); padding: 20px; }
-    .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
-    h1 { color: #1565C0; font-size: 28px; margin-bottom: 10px; }
-    h2 { color: #D32F2F; margin: 20px 0 15px; }
-    p { font-size: 19px; margin: 12px 0; }
-    strong { color: #1976D2; }
-    .footer { margin-top: 40px; color: #666; font-size: 14px; }
-    .loading { color: #999; font-style: italic; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .card {
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(16px);
+      border-radius: 28px;
+      padding: 48px 32px;
+      width: 100%;
+      max-width: 460px;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    }
+    h1 {
+      font-size: 2.4rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, #60a5fa, #c4b5fd);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 32px;
+    }
+    h2 {
+      font-size: 1.8rem;
+      margin-bottom: 24px;
+      color: #93c5fd;
+    }
+    .value {
+      font-size: 3.8rem;
+      font-weight: 700;
+      color: #93c5fd;
+      margin: 12px 0;
+    }
+    .detail {
+      font-size: 1.4rem;
+      margin: 16px 0;
+      opacity: 0.9;
+    }
+    .loading { color: #64748b; }
+    footer {
+      margin-top: 50px;
+      font-size: 0.95rem;
+      opacity: 0.7;
+    }
   </style>
 </head>
 <body>
-  <h1>Toronto 16-Day Weather Forecast</h1>
   <div class="card">
+    <h1>Toronto 16-Day Forecast</h1>
     <h2>Today's Weather</h2>
-    <p><strong>Date:</strong> <span id="date" class="loading">Loading...</span></p>
-    <p><strong>Temperature:</strong> <span id="temp">?</span>°C</p>
-    <p><strong>Feels Like:</strong> <span id="feels">?</span>°C</p>
-    <p><strong>Humidity:</strong> <span id="hum">?</span>%</p>
-    <p><strong>Wind Speed:</strong> <span id="wind">?</span> km/h</p>
-  </div>
-  <div class="footer">
-    Powered by Open-Meteo • Hosted on Microsoft Azure
+    
+    <div class="value"><span id="temp" class="loading">?</span>°C</div>
+    <div class="detail">Feels like <span id="feels" class="loading">?</span>°C</div>
+    
+    <div class="detail">
+      <span id="date" class="loading">Loading...</span> • 
+      <span id="hum" class="loading">?</span>% humidity • 
+      <span id="wind" class="loading">?</span> km/h wind
+    </div>
+
+    <footer>
+      Powered by Open-Meteo • Hosted on Microsoft Azure • BV05 2025
+    </footer>
   </div>
 
   <script>
@@ -40,7 +91,7 @@
         document.getElementById('wind').textContent = d['wind_speed_10m_mean (km/h)'];
       })
       .catch(err => {
-        document.querySelector('.card').innerHTML = `<p style="color:red">Error: ${err.message || 'Check internet'}</p>`;
+        document.querySelector('.card').innerHTML += `<p style="color:#fca5a5; margin-top:20px">Error: ${err.message}</p>`;
       });
   </script>
 </body>
