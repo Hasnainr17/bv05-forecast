@@ -1,5 +1,5 @@
 from flask import Flask, render_template, jsonify
-from Weather1 import fetch_and_process_forecast
+from weather1 import fetch_and_process_forecast
 
 app = Flask(__name__)
 
@@ -15,4 +15,5 @@ def weather():
     return jsonify({"error": "No data"}), 500
 
 if __name__ == "__main__":
+
     app.run(debug=True)
