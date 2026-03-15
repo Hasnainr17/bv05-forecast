@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>BV05 · Toronto 16-Day Forecast</title>
+  <title>BV05 · Toronto Forecast Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
+
     body {
       font-family: 'Inter', sans-serif;
       background: linear-gradient(135deg, #0f172a, #1e293b);
@@ -17,17 +18,23 @@
       justify-content: center;
       padding: 20px;
     }
+
+    .wrapper {
+      width: 100%;
+      max-width: 1000px;
+    }
+
     .card {
       background: rgba(255,255,255,0.08);
       backdrop-filter: blur(16px);
       border-radius: 28px;
-      padding: 48px 32px;
+      padding: 40px 32px;
       width: 100%;
-      max-width: 460px;
-      text-align: center;
       border: 1px solid rgba(255,255,255,0.12);
       box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+      margin-bottom: 24px;
     }
+
     h1 {
       font-size: 2.4rem;
       font-weight: 700;
@@ -35,48 +42,165 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       margin-bottom: 32px;
+      text-align: center;
     }
+
     h2 {
       font-size: 1.8rem;
       margin-bottom: 24px;
       color: #93c5fd;
+      text-align: center;
     }
+
     .value {
       font-size: 3.8rem;
       font-weight: 700;
       color: #93c5fd;
       margin: 12px 0;
+      text-align: center;
     }
+
     .detail {
-      font-size: 1.4rem;
-      margin: 16px 0;
+      font-size: 1.2rem;
+      margin: 12px 0;
       opacity: 0.9;
+      text-align: center;
     }
+
     .loading { color: #64748b; }
+
+    .load-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .mini-box {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
+      padding: 18px;
+      text-align: center;
+    }
+
+    .mini-title {
+      font-size: 1rem;
+      color: #cbd5e1;
+      margin-bottom: 8px;
+    }
+
+    .mini-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #93c5fd;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 24px;
+      overflow: hidden;
+      border-radius: 16px;
+    }
+
+    th, td {
+      padding: 14px 12px;
+      text-align: center;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    th {
+      background: rgba(255,255,255,0.08);
+      color: #93c5fd;
+      font-weight: 600;
+    }
+
+    td {
+      background: rgba(255,255,255,0.04);
+    }
+
+    .error {
+      color: #fca5a5;
+      text-align: center;
+      margin-top: 16px;
+    }
+
     footer {
-      margin-top: 50px;
+      margin-top: 30px;
       font-size: 0.95rem;
       opacity: 0.7;
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>Toronto 16-Day Forecast</h1>
-    <h2>Today's Weather</h2>
-    
-    <div class="value"><span id="temp" class="loading">?</span>°C</div>
-    <div class="detail">Feels like <span id="feels" class="loading">?</span>°C</div>
-    
-    <div class="detail">
-      <span id="date" class="loading">Loading...</span> • 
-      <span id="hum" class="loading">?</span>% humidity • 
-      <span id="wind" class="loading">?</span> km/h wind
+  <div class="wrapper">
+
+    <div class="card">
+      <h1>Toronto Forecast Dashboard</h1>
+      <h2>Today's Weather</h2>
+
+      <div class="value"><span id="temp" class="loading">?</span>°C</div>
+      <div class="detail">Feels like <span id="feels" class="loading">?</span>°C</div>
+
+      <div class="detail">
+        <span id="date" class="loading">Loading...</span> •
+        <span id="hum" class="loading">?</span>% humidity •
+        <span id="wind" class="loading">?</span> km/h wind
+      </div>
     </div>
 
-    <footer>
-      Powered by Open-Meteo • Hosted on Microsoft Azure • BV05 2025
-    </footer>
+    <div class="card">
+      <h2>Latest Load Forecast</h2>
+
+      <div class="load-grid">
+        <div class="mini-box">
+          <div class="mini-title">Forecast Date</div>
+          <div class="mini-value" id="load-date">-</div>
+        </div>
+
+        <div class="mini-box">
+          <div class="mini-title">Residential Load</div>
+          <div class="mini-value" id="res-load">-</div>
+        </div>
+
+        <div class="mini-box">
+          <div class="mini-title">C&amp;I Load</div>
+          <div class="mini-value" id="ci-load">-</div>
+        </div>
+
+        <div class="mini-box">
+          <div class="mini-title">Temperature</div>
+          <div class="mini-value" id="load-temp">-</div>
+        </div>
+
+        <div class="mini-box">
+          <div class="mini-title">Wind Speed</div>
+          <div class="mini-value" id="load-wind">-</div>
+        </div>
+      </div>
+
+      <table id="load-table" style="display:none;">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Residential Load</th>
+            <th>C&amp;I Load</th>
+            <th>Temperature</th>
+            <th>Wind Speed</th>
+          </tr>
+        </thead>
+        <tbody id="load-body"></tbody>
+      </table>
+
+      <div id="load-error" class="error"></div>
+
+      <footer>
+        Powered by Open-Meteo • Hosted on Microsoft Azure • BV05 2025
+      </footer>
+    </div>
+
   </div>
 
   <script>
@@ -91,7 +215,40 @@
         document.getElementById('wind').textContent = d['wind_speed_10m_mean (km/h)'];
       })
       .catch(err => {
-        document.querySelector('.card').innerHTML += `<p style="color:#fca5a5; margin-top:20px">Error: ${err.message}</p>`;
+        document.querySelector('.wrapper').innerHTML += `<p class="error">Weather Error: ${err.message}</p>`;
+      });
+
+    fetch('/api/load')
+      .then(r => r.json())
+      .then(data => {
+        if (data.error) throw new Error(data.error);
+        if (!Array.isArray(data) || data.length === 0) throw new Error('No load forecast data found.');
+
+        const first = data[0];
+
+        document.getElementById('load-date').textContent = new Date(first.date).toLocaleDateString('en-CA');
+        document.getElementById('res-load').textContent = Number(first.forecast_residential_load).toFixed(2);
+        document.getElementById('ci-load').textContent = Number(first.forecast_ci_load).toFixed(2);
+        document.getElementById('load-temp').textContent = `${first.temperature}°C`;
+        document.getElementById('load-wind').textContent = `${first.wind_speed} km/h`;
+
+        const tbody = document.getElementById('load-body');
+        data.forEach(row => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${new Date(row.date).toLocaleDateString('en-CA')}</td>
+            <td>${Number(row.forecast_residential_load).toFixed(2)}</td>
+            <td>${Number(row.forecast_ci_load).toFixed(2)}</td>
+            <td>${row.temperature}</td>
+            <td>${row.wind_speed}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        document.getElementById('load-table').style.display = 'table';
+      })
+      .catch(err => {
+        document.getElementById('load-error').textContent = `Load Forecast Error: ${err.message}`;
       });
   </script>
 </body>
