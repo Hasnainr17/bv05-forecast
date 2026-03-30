@@ -5,7 +5,7 @@ City-based Azure App Service–friendly load forecasting module using Ordinary L
 with temperature regime splitting.
 
 Flow:
-    selected city -> fetch weather for that city -> train city model -> forecast 16 days
+    selected city -> fetch weather -> train city model -> forecast 16 days
 
 Expected usage:
     run_load_forecast_pipeline(city="Toronto")
@@ -253,9 +253,7 @@ def train_segmented_model(
     d = d[d[TEMP_COL].notna() & d[WIND_COL].notna() & d[DOW_COL].notna()].copy()
 
     if d.empty:
-        raise ValueError(
-            f"No training rows available for '{target_col}' within training window."
-        )
+        raise ValueError(f"No training rows available for '{target_col}' within training window.")
 
     T = find_transition_temperature(d, target_col, min_points_per_segment=min_points_per_segment)
 
@@ -288,7 +286,9 @@ def train_segmented_model(
     bh = ols_fit(Xh, yh)
     hot_model = OLSModel(beta=bh, feature_names=fn)
 
-    logger.info(f"Transition temperature for '{target_col}': {T:.2f} °C | cold n={len(cold):,} hot n={len(hot):,}")
+    logger.info(
+        f"Transition temperature for '{target_col}': {T:.2f} °C | cold n={len(cold):,} hot n={len(hot):,}"
+    )
     return SegmentedOLSModel(transition_temp=T, cold_model=cold_model, hot_model=hot_model)
 
 
@@ -312,7 +312,6 @@ def train_models_from_historical_csv(
 def normalize_forecast_weather(df: pd.DataFrame) -> pd.DataFrame:
     d = df.copy()
 
-    # Accept weather1.py output
     rename_map = {}
 
     if "date" in d.columns:
@@ -429,7 +428,9 @@ def perform_validation(
     metrics: Dict[str, Dict[str, float]] = {}
 
     if RES_TARGET_COL in test_df.columns:
-        res_eval = test_df[test_df[RES_TARGET_COL].notna() & test_df[TEMP_COL].notna() & test_df[WIND_COL].notna()].copy()
+        res_eval = test_df[
+            test_df[RES_TARGET_COL].notna() & test_df[TEMP_COL].notna() & test_df[WIND_COL].notna()
+        ].copy()
         if not res_eval.empty:
             res_true = pd.to_numeric(res_eval[RES_TARGET_COL], errors="coerce").to_numpy(dtype=float)
             res_pred = res_model.predict(res_eval)
@@ -440,7 +441,9 @@ def perform_validation(
         metrics["residential"] = {"RMSE": float("nan"), "RMSPE": float("nan")}
 
     if CI_TARGET_COL in test_df.columns:
-        ci_eval = test_df[test_df[CI_TARGET_COL].notna() & test_df[TEMP_COL].notna() & test_df[WIND_COL].notna()].copy()
+        ci_eval = test_df[
+            test_df[CI_TARGET_COL].notna() & test_df[TEMP_COL].notna() & test_df[WIND_COL].notna()
+        ].copy()
         if not ci_eval.empty:
             ci_true = pd.to_numeric(ci_eval[CI_TARGET_COL], errors="coerce").to_numpy(dtype=float)
             ci_pred = ci_model.predict(ci_eval)
@@ -464,7 +467,7 @@ def run_load_forecast_pipeline(
 ) -> Tuple[pd.DataFrame, Path, Optional[Path], Optional[Dict[str, Dict[str, float]]]]:
     """
     End-to-end for one selected city:
-      1) Fetch 16-day weather for that city
+      1) Fetch forecast weather
       2) Train city-specific segmented models from historical CSV
       3) Forecast residential + C&I daily load
       4) Save outputs
@@ -479,8 +482,8 @@ def run_load_forecast_pipeline(
     if not hist_path.exists():
         raise FileNotFoundError(f"Historical CSV not found for {city}: {hist_path}")
 
-    # Weather for selected city from weather1.py
-    forecast_weather_df = fetch_and_process_forecast(city=city)
+    # weather1.py currently does not take a city argument
+    forecast_weather_df = fetch_and_process_forecast()
     if forecast_weather_df is None or forecast_weather_df.empty:
         raise FileNotFoundError(f"No forecast weather data generated for {city}")
 
@@ -503,7 +506,5 @@ if __name__ == "__main__":
     logger.info("Running load_forecast_json_and_csv.py directly...")
     df_out, csv_path, json_path, metrics = run_load_forecast_pipeline(city="Toronto")
     logger.info(f"Done. Rows forecasted: {len(df_out)} | CSV: {csv_path}")
-    
-    
     
     
