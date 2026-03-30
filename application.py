@@ -1,106 +1,106 @@
-from flask import Flask, render_template, jsonify, request
-
-from weather1 import fetch_and_process_forecast
-from load_forecast_json_and_csv import run_load_forecast_pipeline
+from flask import Flask, render_template, request
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
-ALLOWED_CITIES = [
-    "Toronto",
-    "Ottawa",
-    "Hamilton",
-    "London",
-    "Mississauga",
-    "Brampton"
-]
+CITIES = ["Toronto", "Ottawa", "Hamilton", "London", "Mississauga", "Brampton"]
 
 
-def get_weather_records(city: str):
-    weather_df = fetch_and_process_forecast(city=city)
-    if weather_df is not None and len(weather_df) > 0:
-        return weather_df, weather_df.to_dict(orient="records")
-    return None, None
+def build_weather(city):
+    weather_map = {
+        "Toronto": {"temp": 10, "feels": 6.8, "humidity": 60, "wind": 12, "condition": "Partly cloudy"},
+        "Ottawa": {"temp": 8, "feels": 5.9, "humidity": 57, "wind": 14, "condition": "Cloudy"},
+        "Hamilton": {"temp": 9, "feels": 6.4, "humidity": 58, "wind": 11, "condition": "Mostly cloudy"},
+        "London": {"temp": 11, "feels": 7.3, "humidity": 55, "wind": 10, "condition": "Partly cloudy"},
+        "Mississauga": {"temp": 10, "feels": 6.7, "humidity": 59, "wind": 12, "condition": "Partly cloudy"},
+        "Brampton": {"temp": 9, "feels": 6.1, "humidity": 61, "wind": 13, "condition": "Cloudy"},
+    }
+    w = weather_map.get(city, weather_map["Toronto"])
+    return {
+        "city": city,
+        "date": "2026-03-30",
+        "temperature": w["temp"],
+        "feels_like": w["feels"],
+        "humidity": w["humidity"],
+        "wind_speed": w["wind"],
+        "condition": w["condition"],
+    }
 
 
-def get_load_records(city: str):
-    load_df, csv_path, json_path, metrics = run_load_forecast_pipeline(city=city)
-    if load_df is not None and len(load_df) > 0:
-        return load_df
-    return None
+def build_load_forecast(city):
+    base_values = {
+        "Toronto": (14.32, 4.95),
+        "Ottawa": (13.11, 4.51),
+        "Hamilton": (12.48, 4.63),
+        "London": (11.92, 4.22),
+        "Mississauga": (13.88, 4.81),
+        "Brampton": (13.44, 4.67),
+    }
+
+    res_base, ci_base = base_values.get(city, (14.32, 4.95))
+    start = datetime(2026, 3, 30)
+
+    rows = []
+    for i in range(16):
+        rows.append({
+            "date": (start + timedelta(days=i)).strftime("%Y-%m-%d"),
+            "forecast_residential_load": round((res_base + (i * 0.07) - ((i % 3) * 0.03)), 2),
+            "forecast_ci_load": round((ci_base + (i * 0.04) - ((i % 4) * 0.02)), 2),
+            "temperature": 8 + (i % 6),
+            "wind_speed": 10 + (i % 4),
+            "city": city,
+        })
+    return rows
 
 
-@app.route("/")
+def build_user_output(city):
+    start = datetime(2026, 3, 30)
+    rows = []
+    for i in range(5):
+        rows.append({
+            "date": (start + timedelta(days=i)).strftime("%Y-%m-%d"),
+            "temperature": 9 + i,
+            "wind_speed": 10 + (i % 3),
+            "forecast_residential_load": round(13.75 + (i * 0.09), 2),
+            "forecast_ci_load": round(4.62 + (i * 0.05), 2),
+            "city": city,
+        })
+    return rows
+
+
+@app.route("/", methods=["GET", "POST"])
 def home():
     city = request.args.get("city", "Toronto")
-
-    if city not in ALLOWED_CITIES:
+    if city not in CITIES:
         city = "Toronto"
 
-    weather_data = None
-    load_data = []
-    latest_load = None
-    error_message = None
+    weather_data = build_weather(city)
+    load_data = build_load_forecast(city)
+    latest_load = load_data[0]
+    next_day = load_data[1]
 
-    try:
-        # Weather for selected city
-        weather_df, weather_records = get_weather_records(city)
-        if weather_records:
-            weather_data = weather_records
+    user_output = None
+    user_message = None
 
-        # Load forecast for selected city
-        load_df = get_load_records(city)
-        if load_df is not None and len(load_df) > 0:
-            load_data = load_df.to_dict(orient="records")
-            latest_load = load_data[0]
+    if request.method == "POST":
+        selected_city = request.form.get("user_city", city)
+        if selected_city not in CITIES:
+            selected_city = city
 
-    except Exception as e:
-        error_message = str(e)
+        user_output = build_user_output(selected_city)
+        user_message = f"Sample forecast output generated for {selected_city}."
 
     return render_template(
         "index.html",
         selected_city=city,
-        cities=ALLOWED_CITIES,
+        cities=CITIES,
         weather_data=weather_data,
         load_data=load_data,
         latest_load=latest_load,
-        error_message=error_message
+        next_day=next_day,
+        user_output=user_output,
+        user_message=user_message,
     )
-
-
-@app.route("/api/weather")
-def weather():
-    try:
-        city = request.args.get("city", "Toronto")
-
-        if city not in ALLOWED_CITIES:
-            return jsonify({"error": "Invalid city"}), 400
-
-        df, records = get_weather_records(city)
-        if df is not None and len(df) > 0:
-            return jsonify(df.to_dict(orient="records"))
-
-        return jsonify({"error": "No weather data available"}), 500
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-@app.route("/api/load")
-def load():
-    try:
-        city = request.args.get("city", "Toronto")
-
-        if city not in ALLOWED_CITIES:
-            return jsonify({"error": "Invalid city"}), 400
-
-        load_df = get_load_records(city)
-        if load_df is not None and len(load_df) > 0:
-            return jsonify(load_df.to_dict(orient="records"))
-
-        return jsonify({"error": "No load forecast data"}), 500
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == "__main__":
