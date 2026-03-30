@@ -12,6 +12,7 @@ app = Flask(__name__)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
 TEMPLATE_FILE = os.path.join(BASE_DIR, "user_module", "user_input_format.xlsx")
+DEFAULT_FORECAST_CSV = os.path.join(BASE_DIR, "forecast_daily_load.csv")
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
@@ -32,6 +33,30 @@ def allowed_file(filename):
     return ext in ALLOWED_EXTENSIONS
 
 
+def get_weather_records():
+    weather_df = fetch_and_process_forecast()
+    if weather_df is not None and len(weather_df) > 0:
+        return weather_df, weather_df.to_dict(orient="records")
+    return None, None
+
+
+def get_default_load_df():
+    """
+    First try the existing saved CSV so the dashboard loads quickly.
+    If it is missing, fall back to running the pipeline.
+    """
+    if os.path.exists(DEFAULT_FORECAST_CSV):
+        df = pd.read_csv(DEFAULT_FORECAST_CSV)
+        if df is not None and len(df) > 0:
+            return df
+
+    load_df, csv_path, json_path, metrics = run_load_forecast_pipeline()
+    if load_df is not None and len(load_df) > 0:
+        return load_df
+
+    return None
+
+
 @app.route("/")
 def home():
     weather_data = None
@@ -40,13 +65,13 @@ def home():
     error_message = None
 
     try:
-        # Weather data
-        weather_df = fetch_and_process_forecast()
-        if weather_df is not None and len(weather_df) > 0:
-            weather_data = weather_df.to_dict(orient="records")
+        # Weather
+        weather_df, weather_records = get_weather_records()
+        if weather_records:
+            weather_data = weather_records
 
-        # Default load forecast data
-        load_df, csv_path, json_path, metrics = run_load_forecast_pipeline()
+        # Default load forecast
+        load_df = get_default_load_df()
         if load_df is not None and len(load_df) > 0:
             load_data = load_df.to_dict(orient="records")
             latest_load = load_data[0]
@@ -66,7 +91,7 @@ def home():
 @app.route("/api/weather")
 def weather():
     try:
-        df = fetch_and_process_forecast()
+        df, records = get_weather_records()
         if df is not None and len(df) > 0:
             return jsonify(df.iloc[0].to_dict())
         return jsonify({"error": "No weather data available"}), 500
@@ -77,7 +102,7 @@ def weather():
 @app.route("/api/load")
 def load():
     try:
-        load_df, csv_path, json_path, metrics = run_load_forecast_pipeline()
+        load_df = get_default_load_df()
         if load_df is not None and len(load_df) > 0:
             return jsonify(load_df.to_dict(orient="records"))
         return jsonify({"error": "No load forecast data"}), 500
@@ -111,17 +136,22 @@ def user_load():
         save_path = os.path.join(UPLOAD_FOLDER, filename)
         file.save(save_path)
 
-        # James' function returns the generated Excel output path
+        # James' function returns the generated output path
         output_path = run_user_forecast(save_path, city)
+        output_path_str = str(output_path)
 
-        # Read generated output back into a DataFrame
-        result_df = pd.read_excel(output_path)
+        if output_path_str.lower().endswith(".xlsx"):
+            result_df = pd.read_excel(output_path_str)
+        elif output_path_str.lower().endswith(".csv"):
+            result_df = pd.read_csv(output_path_str)
+        else:
+            return jsonify({"error": f"Unsupported output file format: {output_path_str}"}), 500
 
         return jsonify({
             "message": f"User forecast completed for {city}.",
             "city": city,
             "data": result_df.to_dict(orient="records"),
-            "output_file": os.path.basename(str(output_path))
+            "output_file": os.path.basename(output_path_str)
         })
 
     except Exception as e:
