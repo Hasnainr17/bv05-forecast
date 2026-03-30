@@ -1,280 +1,409 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>BV05 · Toronto Forecast Dashboard</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BV05 · {{ selected_city }} Forecast Dashboard</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-1: #0f172a;
+      --bg-2: #1e293b;
+      --card: rgba(255, 255, 255, 0.08);
+      --card-border: rgba(255, 255, 255, 0.12);
+      --text: #e2e8f0;
+      --muted: #cbd5e1;
+      --accent: #93c5fd;
+      --accent-2: #c4b5fd;
+      --shadow: rgba(0, 0, 0, 0.45);
+      --line: rgba(255, 255, 255, 0.08);
+    }
 
     body {
       font-family: 'Inter', sans-serif;
-      background: linear-gradient(135deg, #0f172a, #1e293b);
-      color: #e2e8f0;
+      background: linear-gradient(135deg, var(--bg-1), var(--bg-2));
+      color: var(--text);
       min-height: 100vh;
+      padding: 24px;
       display: flex;
       justify-content: center;
-      padding: 20px;
     }
 
     .wrapper {
       width: 100%;
-      max-width: 1000px;
+      max-width: 1150px;
     }
 
     .card {
-      background: rgba(255,255,255,0.08);
+      background: var(--card);
       backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border-radius: 28px;
-      padding: 40px 32px;
-      border: 1px solid rgba(255,255,255,0.12);
-      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+      border: 1px solid var(--card-border);
+      box-shadow: 0 20px 50px var(--shadow);
+      padding: 32px 28px;
       margin-bottom: 24px;
     }
 
-    h1 {
-      font-size: 2.4rem;
-      font-weight: 700;
+    .hero-title {
+      text-align: center;
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 14px;
       background: linear-gradient(90deg, #60a5fa, #c4b5fd);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      margin-bottom: 32px;
-      text-align: center;
     }
 
-    h2 {
+    .hero-subtitle {
+      text-align: center;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.6;
+      max-width: 760px;
+      margin: 0 auto 24px auto;
+    }
+
+    .section-title {
       font-size: 1.8rem;
-      margin-bottom: 20px;
-      color: #93c5fd;
-      text-align: center;
-    }
-
-    .value {
-      font-size: 3.6rem;
       font-weight: 700;
-      color: #93c5fd;
+      color: var(--accent);
       text-align: center;
+      margin-bottom: 18px;
     }
 
-    .detail {
-      font-size: 1.1rem;
-      margin-top: 10px;
+    .section-note {
       text-align: center;
-    }
-
-    .load-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 16px;
-      margin-top: 20px;
-    }
-
-    .mini-box {
-      background: rgba(255,255,255,0.06);
-      border-radius: 16px;
-      padding: 16px;
-      text-align: center;
-    }
-
-    .mini-title {
+      color: #94a3b8;
       font-size: 0.95rem;
-      color: #cbd5e1;
+      margin-top: 10px;
     }
 
-    .mini-value {
-      font-size: 1.6rem;
-      font-weight: 700;
-      color: #93c5fd;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-
-    th, td {
-      padding: 12px;
-      text-align: center;
-    }
-
-    th {
-      color: #93c5fd;
-    }
-
-    .error {
-      color: #fca5a5;
-      text-align: center;
+    .selector-wrap {
+      display: flex;
+      justify-content: center;
       margin-top: 12px;
+    }
+
+    .selector-form {
+      width: 100%;
+      max-width: 460px;
     }
 
     .input-field {
       width: 100%;
-      padding: 10px;
-      border-radius: 10px;
-      margin-top: 10px;
+      padding: 13px 15px;
+      border-radius: 14px;
       border: none;
+      outline: none;
+      font-size: 1rem;
+      font-family: inherit;
+      background: rgba(255, 255, 255, 0.92);
+      color: #0f172a;
+      box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
     }
 
-    .submit-btn {
-      margin-top: 15px;
-      padding: 10px 20px;
-      border-radius: 12px;
-      border: none;
-      background: linear-gradient(90deg, #60a5fa, #818cf8);
-      color: white;
-      cursor: pointer;
+    .weather-main {
+      text-align: center;
     }
 
+    .weather-label {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .weather-temp {
+      font-size: 4rem;
+      font-weight: 800;
+      color: var(--accent);
+      line-height: 1;
+    }
+
+    .weather-feels {
+      margin-top: 12px;
+      font-size: 1.15rem;
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .weather-meta {
+      margin-top: 12px;
+      font-size: 1.05rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .mini-box {
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 18px;
+      padding: 18px;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .mini-title {
+      font-size: 0.95rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .mini-value {
+      font-size: 1.55rem;
+      font-weight: 700;
+      color: var(--accent);
+      word-break: break-word;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      margin-top: 18px;
+    }
+
+    table {
+      width: 100%;
+      min-width: 860px;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 18px;
+    }
+
+    thead tr {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    th {
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 0.98rem;
+      padding: 14px 12px;
+      text-align: center;
+      border-bottom: 1px solid var(--line);
+    }
+
+    td {
+      padding: 13px 12px;
+      text-align: center;
+      color: var(--text);
+      border-bottom: 1px solid var(--line);
+      font-size: 0.96rem;
+    }
+
+    tbody tr:hover {
+      background: rgba(255,255,255,0.03);
+    }
+
+    .empty-state {
+      text-align: center;
+      color: var(--muted);
+      font-size: 1rem;
+      padding: 12px 0 4px 0;
+    }
+
+    .error {
+      text-align: center;
+      color: #fecaca;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 18px;
+    }
+
+    .pill {
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      color: var(--muted);
+      font-size: 0.92rem;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 14px;
+      }
+
+      .card {
+        padding: 24px 18px;
+        border-radius: 22px;
+      }
+
+      .hero-title {
+        font-size: 2rem;
+      }
+
+      .section-title {
+        font-size: 1.45rem;
+      }
+
+      .weather-temp {
+        font-size: 3.2rem;
+      }
+
+      .mini-value {
+        font-size: 1.35rem;
+      }
+    }
   </style>
 </head>
-
 <body>
-<div class="wrapper">
+  <div class="wrapper">
 
-<!-- WEATHER -->
-<div class="card">
-  <h1>Toronto Forecast Dashboard</h1>
-  <h2>Today's Weather</h2>
+    <!-- HEADER / LOCATION -->
+    <div class="card">
+      <h1 class="hero-title">{{ selected_city }} Forecast Dashboard</h1>
+      <p class="hero-subtitle">
+        Cloud-hosted regression-based forecasting for weather, residential load, and commercial &amp; industrial load demand.
+        Select a city to view the 16-day forecast generated for that location.
+      </p>
 
-  <div class="value" id="temp">-</div>
-  <div class="detail">Feels like <span id="feels">-</span></div>
-  <div class="detail">
-    <span id="date">-</span> •
-    <span id="hum">-</span>% •
-    <span id="wind">-</span> km/h
-  </div>
-</div>
+      <h2 class="section-title">Forecast Location</h2>
 
-<!-- USER FORECAST -->
-<div class="card">
-  <h2>User Load Forecast</h2>
+      <div class="selector-wrap">
+        <form method="GET" action="/" class="selector-form">
+          <select name="city" class="input-field" onchange="this.form.submit()">
+            {% for city in cities %}
+              <option value="{{ city }}" {% if city == selected_city %}selected{% endif %}>{{ city }}</option>
+            {% endfor %}
+          </select>
+        </form>
+      </div>
 
-  <div style="text-align:center;">
-    <a href="/download-template" class="submit-btn">Download Template</a>
-  </div>
-
-  <form id="user-form">
-    <select name="city" class="input-field" required>
-      <option value="">Select City</option>
-      <option>Toronto</option>
-      <option>Ottawa</option>
-      <option>Hamilton</option>
-      <option>London</option>
-      <option>Mississauga</option>
-      <option>Brampton</option>
-    </select>
-
-    <input type="file" name="input_file" class="input-field" required>
-
-    <button class="submit-btn">Run Forecast</button>
-  </form>
-
-  <div id="user-msg" class="detail"></div>
-  <div id="user-error" class="error"></div>
-
-  <table id="user-table" style="display:none;">
-    <thead id="user-head"></thead>
-    <tbody id="user-body"></tbody>
-  </table>
-</div>
-
-<!-- DEFAULT LOAD -->
-<div class="card">
-  <h2>Latest Load Forecast</h2>
-
-  <div class="load-grid">
-    <div class="mini-box">
-      <div class="mini-title">Date</div>
-      <div id="load-date"></div>
+      <div class="pill-row">
+        <div class="pill">16-day forecast horizon</div>
+        <div class="pill">Weather-driven load model</div>
+        <div class="pill">{{ selected_city }} selected</div>
+      </div>
     </div>
-    <div class="mini-box">
-      <div class="mini-title">Residential</div>
-      <div id="res-load"></div>
+
+    {% if error_message %}
+      <div class="card">
+        <div class="error">{{ error_message }}</div>
+      </div>
+    {% endif %}
+
+    <!-- TODAY'S WEATHER -->
+    <div class="card">
+      <h2 class="section-title">Today's Weather</h2>
+
+      {% if weather_data and weather_data|length > 0 %}
+        <div class="weather-main">
+          <div class="weather-label">{{ selected_city }}</div>
+          <div class="weather-temp">{{ weather_data[0].temperature }}</div>
+          <div class="weather-feels">Feels like {{ weather_data[0].feels_like }}</div>
+          <div class="weather-meta">
+            {{ weather_data[0].date }} • {{ weather_data[0].humidity }}% humidity • {{ weather_data[0].wind_speed }} km/h wind
+          </div>
+        </div>
+      {% else %}
+        <div class="empty-state">No weather data available for {{ selected_city }}.</div>
+      {% endif %}
     </div>
-    <div class="mini-box">
-      <div class="mini-title">C&I</div>
-      <div id="ci-load"></div>
+
+    <!-- NEXT FORECAST DAY SUMMARY -->
+    <div class="card">
+      <h2 class="section-title">Next Forecast Day</h2>
+
+      {% if latest_load %}
+        <div class="summary-grid">
+          <div class="mini-box">
+            <div class="mini-title">Date</div>
+            <div class="mini-value">{{ latest_load.date }}</div>
+          </div>
+
+          <div class="mini-box">
+            <div class="mini-title">Residential Load</div>
+            <div class="mini-value">{{ "%.2f"|format(latest_load.forecast_residential_load / 1000000) }}M</div>
+          </div>
+
+          <div class="mini-box">
+            <div class="mini-title">Commercial &amp; Industrial Load</div>
+            <div class="mini-value">{{ "%.2f"|format(latest_load.forecast_ci_load / 1000000) }}M</div>
+          </div>
+
+          {% if latest_load.temperature is defined %}
+          <div class="mini-box">
+            <div class="mini-title">Temperature</div>
+            <div class="mini-value">{{ latest_load.temperature }}</div>
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="section-note">
+          This summary card shows the first available forecast day for {{ selected_city }}.
+        </div>
+      {% else %}
+        <div class="empty-state">No forecast summary available.</div>
+      {% endif %}
     </div>
+
+    <!-- 16-DAY LOAD FORECAST -->
+    <div class="card">
+      <h2 class="section-title">16-Day Load Forecast</h2>
+
+      {% if load_data and load_data|length > 0 %}
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Residential Load</th>
+                <th>C&amp;I Load</th>
+                {% if load_data[0].temperature is defined %}
+                  <th>Temperature</th>
+                {% endif %}
+                {% if load_data[0].wind_speed is defined %}
+                  <th>Wind Speed</th>
+                {% endif %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in load_data %}
+                <tr>
+                  <td>{{ row.date }}</td>
+                  <td>{{ "{:,.2f}".format(row.forecast_residential_load) }}</td>
+                  <td>{{ "{:,.2f}".format(row.forecast_ci_load) }}</td>
+                  {% if row.temperature is defined %}
+                    <td>{{ row.temperature }}</td>
+                  {% endif %}
+                  {% if row.wind_speed is defined %}
+                    <td>{{ row.wind_speed }}</td>
+                  {% endif %}
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="empty-state">No 16-day load forecast data available for {{ selected_city }}.</div>
+      {% endif %}
+    </div>
+
   </div>
-
-  <table id="load-table" style="display:none;">
-    <thead>
-      <tr>
-        <th>Date</th><th>Res</th><th>CI</th>
-      </tr>
-    </thead>
-    <tbody id="load-body"></tbody>
-  </table>
-</div>
-
-</div>
-
-<script>
-
-// WEATHER
-fetch('/api/weather')
-.then(r=>r.json())
-.then(d=>{
-  document.getElementById('temp').textContent = d['temperature_2m_mean (°C)'];
-  document.getElementById('feels').textContent = d['apparent_temperature_mean (°C)'];
-  document.getElementById('date').textContent = new Date(d.date).toLocaleDateString();
-  document.getElementById('hum').textContent = d['relative_humidity_2m_mean (%)'];
-  document.getElementById('wind').textContent = d['wind_speed_10m_mean (km/h)'];
-});
-
-// DEFAULT LOAD
-fetch('/api/load')
-.then(r=>r.json())
-.then(data=>{
-  const first = data[0];
-  document.getElementById('load-date').textContent = first.date;
-  document.getElementById('res-load').textContent = (first.forecast_residential_load/1000000).toFixed(2)+'M';
-  document.getElementById('ci-load').textContent = (first.forecast_ci_load/1000000).toFixed(2)+'M';
-});
-
-// USER FORM
-document.getElementById('user-form').addEventListener('submit', async (e)=>{
-  e.preventDefault();
-
-  const formData = new FormData(e.target);
-
-  document.getElementById('user-msg').textContent="Running...";
-  document.getElementById('user-error').textContent="";
-
-  try{
-    const res = await fetch('/api/user-load',{method:'POST',body:formData});
-    const data = await res.json();
-
-    if(!res.ok) throw new Error(data.error);
-
-    document.getElementById('user-msg').textContent=data.message;
-
-    const rows=data.data;
-    const keys=Object.keys(rows[0]);
-
-    const head=document.getElementById('user-head');
-    head.innerHTML='<tr>'+keys.map(k=>`<th>${k}</th>`).join('')+'</tr>';
-
-    const body=document.getElementById('user-body');
-    body.innerHTML='';
-
-    rows.forEach(r=>{
-      body.innerHTML+=`<tr>${keys.map(k=>`<td>${r[k]}</td>`).join('')}</tr>`;
-    });
-
-    document.getElementById('user-table').style.display='table';
-
-  }catch(err){
-    document.getElementById('user-error').textContent=err.message;
-  }
-
-});
-
-</script>
-
 </body>
 </html>
+
