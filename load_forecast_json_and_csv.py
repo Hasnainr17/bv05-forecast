@@ -1,39 +1,18 @@
 """
-load_forecast_csv.py
-====================
-Azure App Service–friendly load forecasting module using **Ordinary Least Squares (OLS)** regression.
+load_forecast_json_and_csv.py
+=============================
+City-based Azure App Service–friendly load forecasting module using Ordinary Least Squares (OLS)
+with temperature regime splitting.
 
-This version adds **temperature regime splitting**:
-- Automatically finds a transition temperature that best splits “cold” vs “hot” regimes
-- Fits two separate multiple-regression models (cold & hot) for each load type
-- Applies the correct model to forecasted weather rows based on temperature
+Flow:
+    selected city -> fetch weather for that city -> train city model -> forecast 16 days
 
-Core requirements
------------------
-- Train on historical data from 2023–2025 (inclusive)
-- Single CSV training file: both Residential and CI loads are columns in the same file,
-  sharing the same independent variables.
-- Predictors:
-    * Intercept (explicit)
-    * Temperature
-    * Wind speed
-    * Day-of-week one-hot encoded (drop one category)
-- Outputs:
-    * CSV (required)
-    * JSON (optional)
-- Optional testing:
-    * If `data_for_testing.csv` exists, evaluate + write CSV with actual/predicted/errors and metrics.
-
-Azure notes
------------
-- Uses relative paths from the directory of this file.
-- Logs to console + a log file in the same directory.
-- Importable and callable from `app.py` or similar entry point.
+Expected usage:
+    run_load_forecast_pipeline(city="Toronto")
 """
 
 from __future__ import annotations
 
-import importlib
 import logging
 from dataclasses import dataclass
 from pathlib import Path
@@ -42,18 +21,18 @@ from typing import Dict, Optional, Tuple
 import numpy as np
 import pandas as pd
 
+from weather1 import fetch_and_process_forecast
+
 
 # -----------------------------
-# Paths (Azure-friendly)
+# Paths
 # -----------------------------
 BASE_DIR = Path(__file__).resolve().parent
-
 DATA_DIR = BASE_DIR / "Data"
 OUTPUT_DIR = BASE_DIR / "Forecasted Output"
 VALIDATION_DIR = BASE_DIR / "Validation"
 LOG_DIR = BASE_DIR / "Log"
 
-# Create directories if they don't exist
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 VALIDATION_DIR.mkdir(parents=True, exist_ok=True)
@@ -94,7 +73,7 @@ logger.addHandler(console_handler)
 
 
 # -----------------------------
-# Canonical column names (expected in your CSV)
+# Canonical column names
 # -----------------------------
 DATE_COL = "Date"
 DOW_COL = "Day of the week"
@@ -106,15 +85,9 @@ CI_TARGET_COL = "Total CI Consumption"
 
 
 # -----------------------------
-# OLS (no ML libraries)
+# OLS helpers
 # -----------------------------
 def ols_fit(X: np.ndarray, y: np.ndarray) -> np.ndarray:
-    """
-    Closed-form OLS:
-        beta = (X'X)^(-1) X'y
-
-    Uses pseudo-inverse for numerical stability (still OLS).
-    """
     return np.linalg.pinv(X.T @ X) @ X.T @ y
 
 
@@ -130,23 +103,12 @@ def ensure_datetime(df: pd.DataFrame) -> None:
 
 
 def ensure_dow(df: pd.DataFrame) -> None:
-    """
-    Ensure day-of-week exists:
-    - If missing, compute from Date (Mon=1 ... Sun=7)
-    """
     if DOW_COL not in df.columns:
         df[DOW_COL] = pd.to_datetime(df[DATE_COL]).dt.dayofweek + 1
     df[DOW_COL] = pd.to_numeric(df[DOW_COL], errors="coerce")
 
 
 def build_design_matrix(df: pd.DataFrame) -> Tuple[np.ndarray, list]:
-    """
-    Design matrix X:
-      X = [1, temp, wind, dow_2, dow_3, ..., dow_7]
-    Drops dow_1 to avoid perfect multicollinearity.
-
-    We *force* dummy columns to exist so training + forecasting align.
-    """
     d = df.copy()
 
     intercept = np.ones((len(d), 1), dtype=float)
@@ -155,10 +117,12 @@ def build_design_matrix(df: pd.DataFrame) -> Tuple[np.ndarray, list]:
 
     dow = d[DOW_COL].astype("Int64")
     dummies = pd.get_dummies(dow, prefix="dow")
+
     for k in range(1, 8):
         col = f"dow_{k}"
         if col not in dummies.columns:
             dummies[col] = 0
+
     dummies = dummies[[f"dow_{k}" for k in range(1, 8)]].drop(columns=["dow_1"])
 
     X = np.hstack([intercept, temp, wind, dummies.to_numpy(dtype=float)])
@@ -181,11 +145,6 @@ class OLSModel:
 
 @dataclass
 class SegmentedOLSModel:
-    """
-    Two-regime model:
-      - If temperature <= transition_temp: use cold_model
-      - Else: use hot_model
-    """
     transition_temp: Optional[float]
     cold_model: OLSModel
     hot_model: OLSModel
@@ -209,15 +168,9 @@ class SegmentedOLSModel:
 
 
 # -----------------------------
-# Data loading & filtering
+# Historical data
 # -----------------------------
 def load_historical_csv(csv_path: Path) -> pd.DataFrame:
-    """
-    Loads a single CSV containing:
-      - Date, temp, wind, (optional DOW)
-      - Residential target column
-      - CI target column
-    """
     logger.info(f"Loading historical CSV: {csv_path}")
     df = pd.read_csv(csv_path)
 
@@ -234,7 +187,7 @@ def load_historical_csv(csv_path: Path) -> pd.DataFrame:
 
 
 # -----------------------------
-# Transition temperature search
+# Transition search
 # -----------------------------
 def find_transition_temperature(
     df: pd.DataFrame,
@@ -289,7 +242,7 @@ def find_transition_temperature(
 
 
 # -----------------------------
-# Training (segmented)
+# Training
 # -----------------------------
 def train_segmented_model(
     df: pd.DataFrame,
@@ -301,8 +254,7 @@ def train_segmented_model(
 
     if d.empty:
         raise ValueError(
-            f"No training rows available for '{target_col}' within 2023–2025. "
-            f"Check that '{target_col}' is populated for those years."
+            f"No training rows available for '{target_col}' within training window."
         )
 
     T = find_transition_temperature(d, target_col, min_points_per_segment=min_points_per_segment)
@@ -323,7 +275,7 @@ def train_segmented_model(
         y = pd.to_numeric(d[target_col], errors="coerce").to_numpy(dtype=float)
         beta = ols_fit(X, y)
         base = OLSModel(beta=beta, feature_names=feature_names)
-        logger.warning(f"Transition temperature found but split too small for '{target_col}'. Using single OLS model.")
+        logger.warning(f"Transition temperature split too small for '{target_col}'. Using single OLS model.")
         return SegmentedOLSModel(transition_temp=None, cold_model=base, hot_model=base)
 
     Xc, fn = build_design_matrix(cold)
@@ -354,78 +306,39 @@ def train_models_from_historical_csv(
     return res_model, ci_model
 
 
-def try_get_forecast_df_from_weather_module() -> Optional[pd.DataFrame]:
-    """
-    Attempts to import and call the fetch_and_process_forecast() function
-    specifically from the get_weather_forecast_json_and_csv module.
-    """
-    module_name = "user_module.get_weather_forecast_json_and_csv"
-
-    try:
-        mod = importlib.import_module(module_name)
-
-        if hasattr(mod, "fetch_and_process_forecast"):
-            logger.info(f"Using weather module: {module_name}.fetch_and_process_forecast()")
-            df = mod.fetch_and_process_forecast()
-
-            if df is None:
-                logger.error(f"Module {module_name} returned None.")
-                return None
-
-            if "date" not in df.columns and "time" in df.columns:
-                df = df.rename(columns={"time": "date"})
-
-            if "date" in df.columns:
-                df["date"] = pd.to_datetime(df["date"])
-
-            return df
-        else:
-            logger.error(f"Module {module_name} is missing 'fetch_and_process_forecast' function.")
-
-    except Exception as e:
-        logger.error(f"Failed to import or execute {module_name}: {e}")
-
-    return None
-
-
-def load_forecast_weather_from_csv(csv_path: Path) -> pd.DataFrame:
-    logger.info(f"Loading forecast weather CSV: {csv_path}")
-    df = pd.read_csv(csv_path)
-    if "date" not in df.columns and "Date" in df.columns:
-        df = df.rename(columns={"Date": "date"})
-    df["date"] = pd.to_datetime(df["date"])
-    return df
-
-
+# -----------------------------
+# Forecast weather normalization
+# -----------------------------
 def normalize_forecast_weather(df: pd.DataFrame) -> pd.DataFrame:
     d = df.copy()
 
-    if "date" not in d.columns and "Date" in d.columns:
-        d = d.rename(columns={"Date": "date"})
-    if "date" not in d.columns:
-        raise ValueError(f"Forecast weather must contain 'date' column. Columns: {list(d.columns)}")
+    # Accept weather1.py output
+    rename_map = {}
 
-    d["date"] = pd.to_datetime(d["date"])
-    d = d.rename(columns={"date": DATE_COL})
+    if "date" in d.columns:
+        rename_map["date"] = DATE_COL
 
-    if TEMP_COL not in d.columns:
-        for alt in ["temperature_2m_mean", "temperature", "temp"]:
-            if alt in d.columns:
-                d = d.rename(columns={alt: TEMP_COL})
-                break
+    if "temperature" in d.columns:
+        rename_map["temperature"] = TEMP_COL
+    elif "temperature_2m_mean (°C)" in d.columns:
+        rename_map["temperature_2m_mean (°C)"] = TEMP_COL
 
-    if WIND_COL not in d.columns:
-        for alt in ["wind_speed_10m_mean", "wind_speed", "wind"]:
-            if alt in d.columns:
-                d = d.rename(columns={alt: WIND_COL})
-                break
+    if "wind_speed" in d.columns:
+        rename_map["wind_speed"] = WIND_COL
+    elif "wind_speed_10m_mean (km/h)" in d.columns:
+        rename_map["wind_speed_10m_mean (km/h)"] = WIND_COL
+
+    d = d.rename(columns=rename_map)
+
+    if DATE_COL not in d.columns:
+        raise ValueError(f"Forecast weather must contain a date column. Columns: {list(d.columns)}")
 
     if TEMP_COL not in d.columns or WIND_COL not in d.columns:
         raise ValueError(
-            f"Forecast weather missing predictors. Need '{TEMP_COL}' and '{WIND_COL}'. "
-            f"Columns: {list(d.columns)}"
+            f"Forecast weather missing required predictors '{TEMP_COL}' and '{WIND_COL}'. Columns: {list(d.columns)}"
         )
 
+    d[DATE_COL] = pd.to_datetime(d[DATE_COL])
     d[TEMP_COL] = pd.to_numeric(d[TEMP_COL], errors="coerce")
     d[WIND_COL] = pd.to_numeric(d[WIND_COL], errors="coerce")
 
@@ -436,12 +349,13 @@ def normalize_forecast_weather(df: pd.DataFrame) -> pd.DataFrame:
 
 
 # -----------------------------
-# Forecast execution + output
+# Forecast generation
 # -----------------------------
 def forecast_daily_load(
     res_model: SegmentedOLSModel,
     ci_model: SegmentedOLSModel,
     forecast_weather_df: pd.DataFrame,
+    city: str,
 ) -> pd.DataFrame:
     fw = normalize_forecast_weather(forecast_weather_df)
 
@@ -454,34 +368,32 @@ def forecast_daily_load(
         "forecast_ci_load": ci_pred,
         "temperature": fw[TEMP_COL].to_numpy(dtype=float),
         "wind_speed": fw[WIND_COL].to_numpy(dtype=float),
+        "city": city,
     })
     return out
 
 
 def save_forecast_outputs(
     forecast_df: pd.DataFrame,
-    csv_filename: str,
-    json_filename: str,
+    city: str,
 ) -> Tuple[Path, Optional[Path]]:
-    output_dir = OUTPUT_DIR
-    output_dir.mkdir(parents=True, exist_ok=True)
+    csv_filename = f"{city.lower()}_forecast_daily_load.csv"
+    json_filename = f"{city.lower()}_forecast_daily_load.json"
 
-    csv_path = output_dir / csv_filename
+    csv_path = OUTPUT_DIR / csv_filename
     forecast_df.to_csv(csv_path, index=False, encoding="utf-8-sig")
     logger.info(f"Saved forecast CSV: {csv_path}")
 
-    json_path = None
-    if json_filename:
-        json_path = output_dir / json_filename
-        safe_df = forecast_df.where(pd.notna(forecast_df), None)
-        json_path.write_text(safe_df.to_json(orient="records", indent=2), encoding="utf-8")
-        logger.info(f"Saved forecast JSON: {json_path}")
+    json_path = OUTPUT_DIR / json_filename
+    safe_df = forecast_df.where(pd.notna(forecast_df), None)
+    json_path.write_text(safe_df.to_json(orient="records", indent=2), encoding="utf-8")
+    logger.info(f"Saved forecast JSON: {json_path}")
 
     return csv_path, json_path
 
 
 # -----------------------------
-# Testing / Validation
+# Validation
 # -----------------------------
 def regression_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> Dict[str, float]:
     mask = ~np.isnan(y_true) & ~np.isnan(y_pred) & (y_true != 0)
@@ -494,13 +406,9 @@ def regression_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> Dict[str, floa
 def perform_validation(
     res_model: SegmentedOLSModel,
     ci_model: SegmentedOLSModel,
-    output_csv: str,
     hist_path: Path,
     city: str,
 ) -> Optional[Dict[str, Dict[str, float]]]:
-    validation_dir = VALIDATION_DIR
-    validation_dir.mkdir(parents=True, exist_ok=True)
-
     df = pd.read_csv(hist_path)
     if DATE_COL not in df.columns:
         raise ValueError(f"Test CSV must contain '{DATE_COL}'. Columns: {list(df.columns)}")
@@ -512,7 +420,7 @@ def perform_validation(
     test_df = df.loc[mask].copy()
 
     if test_df.empty:
-        logger.warning(f"No historical data found for validation range in {city}.")
+        logger.warning(f"No historical validation data found for {city}.")
         return {}
 
     test_df[TEMP_COL] = pd.to_numeric(test_df.get(TEMP_COL), errors="coerce")
@@ -526,18 +434,9 @@ def perform_validation(
             res_true = pd.to_numeric(res_eval[RES_TARGET_COL], errors="coerce").to_numpy(dtype=float)
             res_pred = res_model.predict(res_eval)
             metrics["residential"] = regression_metrics(res_true, res_pred)
-            res_block = pd.DataFrame({
-                "date": res_eval[DATE_COL].dt.date.astype(str),
-                "res_actual": res_true,
-                "res_predicted": res_pred,
-                "res_error": abs(res_true - res_pred),
-                "res_error_percentage": abs(res_true - res_pred) / res_true * 100,
-            })
         else:
-            res_block = pd.DataFrame(columns=["date", "res_actual", "res_predicted", "res_error"])
             metrics["residential"] = {"RMSE": float("nan"), "RMSPE": float("nan")}
     else:
-        res_block = pd.DataFrame(columns=["date", "res_actual", "res_predicted", "res_error"])
         metrics["residential"] = {"RMSE": float("nan"), "RMSPE": float("nan")}
 
     if CI_TARGET_COL in test_df.columns:
@@ -546,140 +445,65 @@ def perform_validation(
             ci_true = pd.to_numeric(ci_eval[CI_TARGET_COL], errors="coerce").to_numpy(dtype=float)
             ci_pred = ci_model.predict(ci_eval)
             metrics["ci"] = regression_metrics(ci_true, ci_pred)
-            ci_block = pd.DataFrame({
-                "date": ci_eval[DATE_COL].dt.date.astype(str),
-                "ci_actual": ci_true,
-                "ci_predicted": ci_pred,
-                "ci_error": abs(ci_true - ci_pred),
-                "ci_error_percentage": abs(ci_true - ci_pred) / ci_true * 100,
-            })
         else:
-            ci_block = pd.DataFrame(columns=["date", "ci_actual", "ci_predicted", "ci_error"])
             metrics["ci"] = {"RMSE": float("nan"), "RMSPE": float("nan")}
     else:
-        ci_block = pd.DataFrame(columns=["date", "ci_actual", "ci_predicted", "ci_error"])
         metrics["ci"] = {"RMSE": float("nan"), "RMSPE": float("nan")}
 
-    if not res_block.empty and not ci_block.empty:
-        comparison_df = pd.merge(res_block, ci_block, on="date", how="outer")
-    elif not res_block.empty:
-        comparison_df = res_block
-    else:
-        comparison_df = ci_block
-
-    out_path = validation_dir / output_csv
-    with pd.ExcelWriter(out_path, engine="xlsxwriter") as writer:
-        comparison_df.to_excel(writer, sheet_name="Comparison", index=False)
-
-        workbook = writer.book
-        worksheet = writer.sheets["Comparison"]
-        bold_format = workbook.add_format({"bold": True})
-
-        worksheet.write("L1", "Location", bold_format)
-        worksheet.write("M1", city)
-        worksheet.write("L3", "Metric", bold_format)
-        worksheet.write("M3", "Residential", bold_format)
-        worksheet.write("N3", "CI", bold_format)
-        worksheet.write("L4", "RMSE", bold_format)
-        worksheet.write("M4", metrics["residential"]["RMSE"])
-        worksheet.write("N4", metrics["ci"]["RMSE"])
-        worksheet.write("L5", "RMSPE (%)", bold_format)
-        worksheet.write("M5", metrics["residential"]["RMSPE"])
-        worksheet.write("N5", metrics["ci"]["RMSPE"])
-
-        for i, target in enumerate(["Residential", "CI"]):
-            chart = workbook.add_chart({"type": "line"})
-            actual_col = 1 if target == "Residential" else 5
-            pred_col = 2 if target == "Residential" else 6
-
-            chart.add_series({
-                "name": f"Actual {target}",
-                "categories": ["Comparison", 1, 0, len(comparison_df), 0],
-                "values": ["Comparison", 1, actual_col, len(comparison_df), actual_col],
-            })
-            chart.add_series({
-                "name": f"Predicted {target}",
-                "values": ["Comparison", 1, pred_col, len(comparison_df), pred_col],
-            })
-            chart.set_title({"name": f"{city} {target} Load Comparison"})
-            worksheet.insert_chart("G8" if i == 0 else "G23", chart)
-
-        for i, col in enumerate(comparison_df.columns):
-            max_len = max(
-                comparison_df[col].astype(str).map(len).max() + 3 if not comparison_df.empty else len(col),
-                len(col),
-            ) + 2
-            worksheet.set_column(i, i, max_len)
-
-    logger.info(f"Test results for {city} saved to: {out_path}")
+    logger.info(f"Validation metrics for {city}: {metrics}")
     return metrics
 
 
 # -----------------------------
-# End-to-end pipeline
+# Main pipeline
 # -----------------------------
 def run_load_forecast_pipeline(
+    city: str = "Toronto",
     run_test_if_present: bool = True,
     min_points_per_segment: int = 30,
 ) -> Tuple[pd.DataFrame, Path, Optional[Path], Optional[Dict[str, Dict[str, float]]]]:
     """
-    End-to-end:
-      1) Get forecast weather from weather module or CSV
-      2) Train segmented Residential + CI OLS models from historical CSV (2023–2025)
-      3) Predict daily loads, selecting cold/hot model by temperature
-      4) Save forecast outputs
-      5) Optionally test against historical window
+    End-to-end for one selected city:
+      1) Fetch 16-day weather for that city
+      2) Train city-specific segmented models from historical CSV
+      3) Forecast residential + C&I daily load
+      4) Save outputs
+      5) Optionally compute validation metrics
     """
-    logger.info("Triggering weather forecast script...")
+    if city not in LOCATIONS:
+        raise ValueError(f"Unsupported city: {city}")
 
-    # Import and execute weather module directly instead of subprocess
-    weather_mod = importlib.import_module("user_module.get_weather_forecast_json_and_csv")
-    if hasattr(weather_mod, "fetch_and_process_forecast"):
-        weather_mod.fetch_and_process_forecast()
+    logger.info(f"Running load forecast pipeline for {city}")
 
-    out_df = None
-    csv_path = None
-    json_path = None
+    hist_path = DATA_DIR / LOCATIONS[city]
+    if not hist_path.exists():
+        raise FileNotFoundError(f"Historical CSV not found for {city}: {hist_path}")
+
+    # Weather for selected city from weather1.py
+    forecast_weather_df = fetch_and_process_forecast(city=city)
+    if forecast_weather_df is None or forecast_weather_df.empty:
+        raise FileNotFoundError(f"No forecast weather data generated for {city}")
+
+    res_model, ci_model = train_models_from_historical_csv(
+        hist_path,
+        min_points_per_segment=min_points_per_segment,
+    )
+
+    out_df = forecast_daily_load(res_model, ci_model, forecast_weather_df, city)
+    csv_path, json_path = save_forecast_outputs(out_df, city)
+
     metrics = None
-
-    for city, csv_name in LOCATIONS.items():
-        logger.info(f"Processing region: {city}")
-        hist_path = DATA_DIR / csv_name
-        weather_fc_path = DATA_DIR / f"{city}_forecast_daily_weather.csv"
-
-        if not hist_path.exists():
-            logger.warning(f"File {csv_name} not found. Skipping.")
-            continue
-
-        if not weather_fc_path.exists():
-            logger.warning(f"Weather forecast file not found for {city}: {weather_fc_path}. Skipping.")
-            continue
-
-        forecast_df = load_forecast_weather_from_csv(weather_fc_path)
-
-        output_csv_filename = f"{city}_forecasted_daily_load.csv"
-        output_json_filename = f"{city}_forecasted_daily_load.json"
-        test_csv_filename = f"{city}_data_evaluation.xlsx"
-
-        res_model, ci_model = train_models_from_historical_csv(
-            hist_path,
-            min_points_per_segment=min_points_per_segment,
-        )
-
-        out_df = forecast_daily_load(res_model, ci_model, forecast_df)
-
-        csv_path, json_path = save_forecast_outputs(out_df, output_csv_filename, output_json_filename)
-
-        if run_test_if_present:
-            metrics = perform_validation(res_model, ci_model, test_csv_filename, hist_path, city)
-
-    if out_df is None or csv_path is None:
-        raise FileNotFoundError("No forecast outputs were generated. Check historical and weather forecast files.")
+    if run_test_if_present:
+        metrics = perform_validation(res_model, ci_model, hist_path, city)
 
     return out_df, csv_path, json_path, metrics
 
 
 if __name__ == "__main__":
-    logger.info("Running load_forecast_csv.py directly...")
-    df_out, csv_path, json_path, metrics = run_load_forecast_pipeline()
+    logger.info("Running load_forecast_json_and_csv.py directly...")
+    df_out, csv_path, json_path, metrics = run_load_forecast_pipeline(city="Toronto")
     logger.info(f"Done. Rows forecasted: {len(df_out)} | CSV: {csv_path}")
+    
+    
+    
+    
