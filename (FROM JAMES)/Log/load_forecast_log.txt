@@ -1,0 +1,3 @@
+2026-03-20 01:12:19,488 - INFO - Loading historical CSV: C:\Users\hatie\OneDrive\Documents\Capstone\load_forecasting\Data\toronto_his_load.csv
+2026-03-20 01:12:19,620 - INFO - Transition temperature for 'Total Residential Consumption': 16.03 °C | cold n=638 hot n=274
+2026-03-20 01:12:19,765 - INFO - Transition temperature for 'Total CI Consumption': 13.55 °C | cold n=570 hot n=342

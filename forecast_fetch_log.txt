@@ -1,24 +1,8 @@
-2026-04-01 21:21:28,527 - INFO - Executing fetch_and_process_forecast for Toronto...
-2026-04-01 21:21:28,529 - INFO - Fetching forecast data for Toronto from: https://api.open-meteo.com/v1/forecast?latitude=43.6532&longitude=-79.3832&daily=temperature_2m_mean,apparent_temperature_mean,relative_humidity_2m_mean,wind_speed_10m_mean,cloud_cover_mean,dew_point_2m_mean,precipitation_sum,shortwave_radiation_sum&timezone=America%2FToronto&forecast_days=16
-2026-04-01 21:21:29,053 - INFO - Forecast data fetched successfully for Toronto.
-2026-04-01 21:21:29,055 - DEBUG - Raw forecast data type received for Toronto: <class 'dict'>
-2026-04-01 21:21:29,056 - DEBUG - Keys in daily forecast data for Toronto: ['time', 'temperature_2m_mean', 'apparent_temperature_mean', 'relative_humidity_2m_mean', 'wind_speed_10m_mean', 'cloud_cover_mean', 'dew_point_2m_mean', 'precipitation_sum', 'shortwave_radiation_sum']
-2026-04-01 21:21:29,056 - INFO - Processing 16 forecast days for Toronto.
-2026-04-01 21:21:29,063 - INFO - Final forecast DataFrame created successfully for Toronto.
-2026-04-01 21:21:29,063 - DEBUG - Final forecast DataFrame shape for Toronto: (16, 10)
-2026-04-01 21:21:31,704 - INFO - Executing fetch_and_process_forecast for Toronto...
-2026-04-01 21:21:31,704 - INFO - Fetching forecast data for Toronto from: https://api.open-meteo.com/v1/forecast?latitude=43.6532&longitude=-79.3832&daily=temperature_2m_mean,apparent_temperature_mean,relative_humidity_2m_mean,wind_speed_10m_mean,cloud_cover_mean,dew_point_2m_mean,precipitation_sum,shortwave_radiation_sum&timezone=America%2FToronto&forecast_days=16
-2026-04-01 21:21:32,215 - INFO - Forecast data fetched successfully for Toronto.
-2026-04-01 21:21:32,217 - DEBUG - Raw forecast data type received for Toronto: <class 'dict'>
-2026-04-01 21:21:32,217 - DEBUG - Keys in daily forecast data for Toronto: ['time', 'temperature_2m_mean', 'apparent_temperature_mean', 'relative_humidity_2m_mean', 'wind_speed_10m_mean', 'cloud_cover_mean', 'dew_point_2m_mean', 'precipitation_sum', 'shortwave_radiation_sum']
-2026-04-01 21:21:32,217 - INFO - Processing 16 forecast days for Toronto.
-2026-04-01 21:21:32,225 - INFO - Final forecast DataFrame created successfully for Toronto.
-2026-04-01 21:21:32,226 - DEBUG - Final forecast DataFrame shape for Toronto: (16, 10)
-2026-04-01 21:25:44,670 - INFO - Executing fetch_and_process_forecast for Toronto...
-2026-04-01 21:25:44,671 - INFO - Fetching forecast data for Toronto from: https://api.open-meteo.com/v1/forecast?latitude=43.6532&longitude=-79.3832&daily=temperature_2m_mean,apparent_temperature_mean,relative_humidity_2m_mean,wind_speed_10m_mean,cloud_cover_mean,dew_point_2m_mean,precipitation_sum,shortwave_radiation_sum&timezone=America%2FToronto&forecast_days=16
-2026-04-01 21:25:45,210 - INFO - Forecast data fetched successfully for Toronto.
-2026-04-01 21:25:45,213 - DEBUG - Raw forecast data type received for Toronto: <class 'dict'>
-2026-04-01 21:25:45,213 - DEBUG - Keys in daily forecast data for Toronto: ['time', 'temperature_2m_mean', 'apparent_temperature_mean', 'relative_humidity_2m_mean', 'wind_speed_10m_mean', 'cloud_cover_mean', 'dew_point_2m_mean', 'precipitation_sum', 'shortwave_radiation_sum']
-2026-04-01 21:25:45,213 - INFO - Processing 16 forecast days for Toronto.
-2026-04-01 21:25:45,219 - INFO - Final forecast DataFrame created successfully for Toronto.
-2026-04-01 21:25:45,220 - DEBUG - Final forecast DataFrame shape for Toronto: (16, 10)
+2026-04-01 21:55:42,077 - INFO - Executing fetch_and_process_forecast for Toronto...
+2026-04-01 21:55:42,077 - INFO - Fetching forecast data for Toronto from: https://api.open-meteo.com/v1/forecast?latitude=43.6532&longitude=-79.3832&daily=temperature_2m_mean,apparent_temperature_mean,relative_humidity_2m_mean,wind_speed_10m_mean,cloud_cover_mean,dew_point_2m_mean,precipitation_sum,shortwave_radiation_sum&timezone=America%2FToronto&forecast_days=16
+2026-04-01 21:55:42,617 - INFO - Forecast data fetched successfully for Toronto.
+2026-04-01 21:55:42,620 - DEBUG - Raw forecast data type received for Toronto: <class 'dict'>
+2026-04-01 21:55:42,620 - DEBUG - Keys in daily forecast data for Toronto: ['time', 'temperature_2m_mean', 'apparent_temperature_mean', 'relative_humidity_2m_mean', 'wind_speed_10m_mean', 'cloud_cover_mean', 'dew_point_2m_mean', 'precipitation_sum', 'shortwave_radiation_sum']
+2026-04-01 21:55:42,620 - INFO - Processing 16 forecast days for Toronto.
+2026-04-01 21:55:42,628 - INFO - Final forecast DataFrame created successfully for Toronto.
+2026-04-01 21:55:42,628 - DEBUG - Final forecast DataFrame shape for Toronto: (16, 10)

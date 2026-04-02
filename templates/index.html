@@ -1,486 +1,447 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BV05 Forecast Dashboard</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      font-family: 'Inter', sans-serif;
-      background: linear-gradient(180deg, #0e1a33 0%, #16274a 100%);
-      color: #eef4ff;
-      min-height: 100vh;
-      padding: 28px;
-    }
-
-    .container {
-      max-width: 1150px;
-      margin: 0 auto;
-    }
-
-    .card {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 30px;
-      padding: 30px 32px;
-      margin-bottom: 22px;
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
-      backdrop-filter: blur(10px);
-    }
-
-    .hero {
-      text-align: center;
-      padding-top: 40px;
-      padding-bottom: 28px;
-    }
-
-    h1 {
-      margin: 0 0 10px;
-      font-size: 3rem;
-      font-weight: 800;
-      color: #9fd0ff;
-      letter-spacing: -0.03em;
-    }
-
-    .hero p {
-      max-width: 820px;
-      margin: 0 auto 28px;
-      font-size: 1.15rem;
-      line-height: 1.6;
-      color: #edf4ff;
-    }
-
-    h2 {
-      margin: 0 0 18px;
-      text-align: center;
-      font-size: 2rem;
-      font-weight: 800;
-      color: #bde4ff;
-    }
-
-    h3 {
-      margin: 0 0 10px;
-      font-size: 1.2rem;
-      color: #dbeafe;
-    }
-
-    .location-form {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 18px;
-    }
-
-    select, input {
-      width: 100%;
-      padding: 14px 16px;
-      border-radius: 16px;
-      border: none;
-      font-size: 1rem;
-      font-family: inherit;
-      background: #f8fafc;
-      color: #1e293b;
-    }
-
-    .location-form select {
-      max-width: 430px;
-    }
-
-    .pills {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-top: 10px;
-    }
-
-    .pill {
-      padding: 10px 16px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.1);
-      color: #f1f5f9;
-      font-weight: 600;
-      font-size: 0.95rem;
-    }
-
-    .weather-main {
-      text-align: center;
-    }
-
-    .weather-temp {
-      font-size: 4.2rem;
-      font-weight: 800;
-      color: #dbeafe;
-      margin: 10px 0 4px;
-    }
-
-    .weather-sub {
-      font-size: 1.35rem;
-      font-weight: 700;
-      color: #f8fafc;
-      margin-bottom: 10px;
-    }
-
-    .weather-details {
-      font-size: 1.08rem;
-      color: #e2e8f0;
-      line-height: 1.7;
-    }
-
-    .summary-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 18px;
-      margin-top: 16px;
-    }
-
-    .mini-box {
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 22px;
-      padding: 22px 18px;
-      text-align: center;
-    }
-
-    .mini-label {
-      font-size: 1rem;
-      color: #dbeafe;
-      margin-bottom: 8px;
-      font-weight: 600;
-    }
-
-    .mini-value {
-      font-size: 1.9rem;
-      font-weight: 800;
-      color: #ffffff;
-    }
-
-    .mini-caption {
-      margin-top: 6px;
-      color: #cbd5e1;
-      font-size: 0.95rem;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      overflow: hidden;
-      margin-top: 18px;
-      border-radius: 18px;
-    }
-
-    thead {
-      background: rgba(255, 255, 255, 0.08);
-    }
-
-    th, td {
-      padding: 14px 12px;
-      text-align: center;
-      font-size: 0.98rem;
-    }
-
-    th {
-      color: #cfe8ff;
-      font-weight: 700;
-    }
-
-    tbody tr:nth-child(even) {
-      background: rgba(255, 255, 255, 0.04);
-    }
-
-    tbody tr:nth-child(odd) {
-      background: rgba(255, 255, 255, 0.02);
-    }
-
-    .section-text {
-      text-align: center;
-      color: #e2e8f0;
-      max-width: 780px;
-      margin: 0 auto 12px;
-      line-height: 1.6;
-    }
-
-    .user-panel {
-      display: grid;
-      grid-template-columns: 1.2fr 1fr;
-      gap: 22px;
-      align-items: start;
-    }
-
-    .form-box,
-    .output-box {
-      background: rgba(255, 255, 255, 0.06);
-      border-radius: 24px;
-      padding: 22px;
-    }
-
-    .form-group {
-      margin-bottom: 14px;
-    }
-
-    .btn {
-      display: inline-block;
-      border: none;
-      border-radius: 14px;
-      padding: 13px 18px;
-      font-size: 1rem;
-      font-weight: 700;
-      cursor: pointer;
-      background: linear-gradient(135deg, #60a5fa, #818cf8);
-      color: white;
-      font-family: inherit;
-      box-shadow: 0 10px 24px rgba(96, 165, 250, 0.25);
-    }
-
-    .btn-row {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-top: 8px;
-    }
-
-    .btn-secondary {
-      background: rgba(255,255,255,0.1);
-      color: #eef4ff;
-      box-shadow: none;
-    }
-
-    .message {
-      margin-top: 14px;
-      padding: 12px 14px;
-      border-radius: 14px;
-      background: rgba(34, 197, 94, 0.15);
-      color: #dcfce7;
-      font-weight: 600;
-    }
-
-    .small-note {
-      font-size: 0.92rem;
-      color: #cbd5e1;
-      margin-top: 10px;
-      line-height: 1.5;
-    }
-
-    .footer-note {
-      text-align: center;
-      margin-top: 10px;
-      color: #cbd5e1;
-      font-size: 0.92rem;
-    }
-
-    @media (max-width: 900px) {
-      .summary-grid,
-      .user-panel {
-        grid-template-columns: 1fr;
-      }
-
-      h1 {
-        font-size: 2.3rem;
-      }
-
-      .weather-temp {
-        font-size: 3.3rem;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-
-    <div class="card hero">
-      <h1>Toronto Forecast Dashboard</h1>
-      <p>
-        BV05 is a cloud-hosted regression-based platform for forecasting weather, residential load,
-        and commercial & industrial electricity demand. The dashboard integrates forecast outputs
-        into one centralized web interface to support analysis, planning, and decision-making.
-      </p>
-
-      <h2>Forecast Location</h2>
-      <form method="GET" class="location-form">
-        <select name="city" onchange="this.form.submit()">
-          {% for city in cities %}
-            <option value="{{ city }}" {% if city == selected_city %}selected{% endif %}>{{ city }}</option>
-          {% endfor %}
-        </select>
-      </form>
-
-      <div class="pills">
-        <div class="pill">16-day forecast horizon</div>
-        <div class="pill">Weather-driven load model</div>
-        <div class="pill">{{ selected_city }} selected</div>
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>BV05 Forecast Dashboard</title>
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+      <style>
+         * {
+         box-sizing: border-box;
+         }
+         body {
+         margin: 0;
+         font-family: 'Inter', sans-serif;
+         background: linear-gradient(180deg, #0e1a33 0%, #16274a 100%);
+         color: #eef4ff;
+         min-height: 100vh;
+         padding: 28px;
+         }
+         .container {
+         max-width: 1150px;
+         margin: 0 auto;
+         }
+         .card {
+         background: rgba(255, 255, 255, 0.08);
+         border: 1px solid rgba(255, 255, 255, 0.12);
+         border-radius: 30px;
+         padding: 30px 32px;
+         margin-bottom: 22px;
+         box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+         backdrop-filter: blur(10px);
+         }
+         .hero {
+         text-align: center;
+         padding-top: 40px;
+         padding-bottom: 28px;
+         }
+         h1 {
+         margin: 0 0 10px;
+         font-size: 3rem;
+         font-weight: 800;
+         color: #9fd0ff;
+         letter-spacing: -0.03em;
+         }
+         .hero p {
+         max-width: 820px;
+         margin: 0 auto 28px;
+         font-size: 1.15rem;
+         line-height: 1.6;
+         color: #edf4ff;
+         }
+         h2 {
+         margin: 0 0 18px;
+         text-align: center;
+         font-size: 2rem;
+         font-weight: 800;
+         color: #bde4ff;
+         }
+         h3 {
+         margin: 0 0 10px;
+         font-size: 1.2rem;
+         color: #dbeafe;
+         }
+         .location-form {
+         display: flex;
+         justify-content: center;
+         margin-bottom: 18px;
+         }
+         select, input {
+         width: 100%;
+         padding: 14px 16px;
+         border-radius: 16px;
+         border: none;
+         font-size: 1rem;
+         font-family: inherit;
+         background: #f8fafc;
+         color: #1e293b;
+         }
+         .location-form select {
+         max-width: 430px;
+         }
+         .pills {
+         display: flex;
+         justify-content: center;
+         gap: 12px;
+         flex-wrap: wrap;
+         margin-top: 10px;
+         }
+         .pill {
+         padding: 10px 16px;
+         border-radius: 999px;
+         background: rgba(255, 255, 255, 0.1);
+         color: #f1f5f9;
+         font-weight: 600;
+         font-size: 0.95rem;
+         }
+         .weather-main {
+         text-align: center;
+         }
+         .weather-temp {
+         font-size: 4.2rem;
+         font-weight: 800;
+         color: #dbeafe;
+         margin: 10px 0 4px;
+         }
+         .weather-sub {
+         font-size: 1.35rem;
+         font-weight: 700;
+         color: #f8fafc;
+         margin-bottom: 10px;
+         }
+         .weather-details {
+         font-size: 1.08rem;
+         color: #e2e8f0;
+         line-height: 1.7;
+         }
+         .summary-grid {
+         display: grid;
+         grid-template-columns: repeat(3, 1fr);
+         gap: 18px;
+         margin-top: 16px;
+         }
+         .mini-box {
+         background: rgba(255, 255, 255, 0.08);
+         border-radius: 22px;
+         padding: 22px 18px;
+         text-align: center;
+         }
+         .mini-label {
+         font-size: 1rem;
+         color: #dbeafe;
+         margin-bottom: 8px;
+         font-weight: 600;
+         }
+         .mini-value {
+         font-size: 1.9rem;
+         font-weight: 800;
+         color: #ffffff;
+         }
+         .mini-caption {
+         margin-top: 6px;
+         color: #cbd5e1;
+         font-size: 0.95rem;
+         }
+         table {
+         width: 100%;
+         border-collapse: collapse;
+         overflow: hidden;
+         margin-top: 18px;
+         border-radius: 18px;
+         }
+         thead {
+         background: rgba(255, 255, 255, 0.08);
+         }
+         th, td {
+         padding: 14px 12px;
+         text-align: center;
+         font-size: 0.98rem;
+         }
+         th {
+         color: #cfe8ff;
+         font-weight: 700;
+         }
+         tbody tr:nth-child(even) {
+         background: rgba(255, 255, 255, 0.04);
+         }
+         tbody tr:nth-child(odd) {
+         background: rgba(255, 255, 255, 0.02);
+         }
+         .section-text {
+         text-align: center;
+         color: #e2e8f0;
+         max-width: 780px;
+         margin: 0 auto 12px;
+         line-height: 1.6;
+         }
+         .user-panel {
+         display: flex;
+         flex-direction: column;
+         gap: 22px;
+         }
+         .form-box,
+         .output-box {
+         background: rgba(255, 255, 255, 0.06);
+         border-radius: 24px;
+         padding: 22px;
+         width: 100%;
+         }
+         .form-container {
+         display: flex;
+         gap: 20px;
+         flex-wrap: wrap;
+         align-items: flex-end;
+         }
+         .form-container .form-group {
+         flex: 1;
+         min-width: 200px;
+         margin-bottom: 0;
+         }
+         .form-group {
+         margin-bottom: 14px;
+         }
+         .btn {
+         display: inline-block;
+         border: none;
+         border-radius: 14px;
+         padding: 13px 18px;
+         font-size: 1rem;
+         font-weight: 700;
+         cursor: pointer;
+         background: linear-gradient(135deg, #60a5fa, #818cf8);
+         color: white;
+         font-family: inherit;
+         box-shadow: 0 10px 24px rgba(96, 165, 250, 0.25);
+         }
+         .btn-row {
+         display: flex;
+         gap: 12px;
+         flex-wrap: wrap;
+         margin-top: 8px;
+         }
+         .btn-secondary {
+         background: rgba(255,255,255,0.1);
+         color: #eef4ff;
+         box-shadow: none;
+         }
+         .message {
+         margin-top: 14px;
+         padding: 12px 14px;
+         border-radius: 14px;
+         background: rgba(34, 197, 94, 0.15);
+         color: #dcfce7;
+         font-weight: 600;
+         }
+         .small-note {
+         font-size: 0.92rem;
+         color: #cbd5e1;
+         margin-top: 10px;
+         line-height: 1.5;
+         }
+         .footer-note {
+         text-align: center;
+         margin-top: 10px;
+         color: #cbd5e1;
+         font-size: 0.92rem;
+         }
+         @media (max-width: 900px) {
+         .summary-grid,
+         .user-panel {
+         grid-template-columns: 1fr;
+         }
+         h1 {
+         font-size: 2.3rem;
+         }
+         .weather-temp {
+         font-size: 3.3rem;
+         }
+         }
+      </style>
+   </head>
+   <body>
+      <div class="container">
+         <div class="card hero">
+            <h1>Toronto Forecast Dashboard</h1>
+            <p>
+               BV05 is a cloud-hosted regression-based platform for forecasting weather, residential load,
+               and commercial & industrial electricity demand. The dashboard integrates forecast outputs
+               into one centralized web interface to support analysis, planning, and decision-making.
+            </p>
+            <h2>Forecast Location</h2>
+            <form method="GET" class="location-form">
+               <select name="city" onchange="this.form.submit()">
+               {% for city in cities %}
+               <option value="{{ city }}" {% if city == selected_city %}selected{% endif %}>{{ city }}</option>
+               {% endfor %}
+               </select>
+            </form>
+            <div class="pills">
+               <div class="pill">16-day forecast horizon</div>
+               <div class="pill">Weather-driven load model</div>
+               <div class="pill">{{ selected_city }} selected</div>
+            </div>
+         </div>
+         <div class="card">
+            <h2>Today's Weather</h2>
+            <div class="weather-main">
+               <div class="weather-sub">{{ weather_data.city }}</div>
+               <div class="weather-temp">{{ weather_data.temperature }}°C</div>
+               <!-- <div class="weather-sub">Feels like {{ weather_data.feels_like }}°C</div> -->
+               <!-- <div class="weather-details">
+                  {{ weather_data.date }} • {{ weather_data.humidity }}% humidity • {{ weather_data.wind_speed }} km/h wind
+                  <br>
+                  {{ weather_data.condition }}
+               </div> -->
+            </div>
+         </div>
+         <div class="card">
+            <h2>Next Forecast Day</h2>
+            <p class="section-text">
+               The following day reflects the next available model output based on projected weather conditions
+               and the regression-based demand relationship for {{ selected_city }}.
+            </p>
+            <div class="summary-grid">
+               <div class="mini-box">
+                  <div class="mini-label">Date</div>
+                  <div class="mini-value">{{ next_day.date }}</div>
+                  <div class="mini-caption">Next forecasted day</div>
+               </div>
+               <div class="mini-box">
+                  <div class="mini-label">Residential Load</div>
+                  <div class="mini-value">{{ "%.2f"|format(next_day.forecast_residential_load) }}M</div>
+                  <div class="mini-caption">Projected residential demand</div>
+               </div>
+               <div class="mini-box">
+                  <div class="mini-label">C&amp;I Load</div>
+                  <div class="mini-value">{{ "%.2f"|format(next_day.forecast_ci_load) }}M</div>
+                  <div class="mini-caption">Projected commercial &amp; industrial demand</div>
+               </div>
+            </div>
+         </div>
+         <div class="card">
+            <h2>16-Day Load Forecast</h2>
+            <p class="section-text">
+               Forecast values below show the projected daily Residential and Commercial &amp; Industrial load
+               for {{ selected_city }} over a 16-day horizon, based on weather-driven regression output.
+            </p>
+            <table>
+               <thead>
+                  <tr>
+                     <th>Date</th>
+                     <th>Temperature (°C)</th>
+                     <th>Wind Speed (km/h)</th>
+                     <th>Residential Load (M)</th>
+                     <th>C&amp;I Load (M)</th>
+                  </tr>
+               </thead>
+               <tbody>
+                  {% for row in load_data %}
+                  <tr>
+                     <td>{{ row.date }}</td>
+                     <td>{{ row.temperature }}</td>
+                     <td>{{ row.wind_speed }}</td>
+                     <td>{{ "%.2f"|format(row.forecast_residential_load) }}</td>
+                     <td>{{ "%.2f"|format(row.forecast_ci_load) }}</td>
+                  </tr>
+                  {% endfor %}
+               </tbody>
+            </table>
+            <div class="footer-note">
+               Displayed forecast horizon: 16 daily observations for {{ selected_city }}
+            </div>
+         </div>
+         <div class="card">
+            <h2>User Input Forecast</h2>
+            <p class="section-text">
+               Users can provide custom forecasting inputs through the interface to generate sample forecast
+               outputs for a selected city. This section demonstrates how user-entered values can be integrated
+               into the dashboard workflow.
+            </p>
+            <p class="section-text">
+               Enter your custom weather parameters below to generate a specific 5-day load projection.
+            </p>
+            <div class="user-panel">
+               <div class="form-box">
+                  <form method="POST">
+                     <div class="form-group" style="margin-bottom: 20px;">
+                        <label>Select City</label>
+                        <select name="user_city" style="max-width: 300px;">
+                        {% for city in cities %}
+                        <option value="{{ city }}" {% if city == selected_city %}selected{% endif %}>{{ city }}</option>
+                        {% endfor %}
+                        </select>
+                     </div>
+                     <table class="input-table">
+                        <thead>
+                           <tr>
+                              <th>Forecast Day</th>
+                              <th>Date</th>
+                              <th>Temperature (°C)</th>
+                              <th>Wind Speed (km/h)</th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                           {% for i in range(5) %}
+                           <tr>
+                              <td style="color: #9fd0ff; font-weight: 600;">Day {{ i + 1 }}</td>
+                              <td>
+                                 <input type="date" name="date_{{ i }}" value="{{ input_dates[i] }}" class="clean-input" required>
+                              </td>
+                              <td>
+                                 <input type="number" name="temp_{{ i }}" step="0.1" placeholder="0.0" class="clean-input" required>
+                              </td>
+                              <td>
+                                 <input type="number" name="wind_{{ i }}" step="0.1" placeholder="0.0" class="clean-input" required>
+                              </td>
+                           </tr>
+                           {% endfor %}
+                        </tbody>
+                     </table>
+                     <div class="btn-row" style="margin-top: 20px; justify-content: center;">
+                        <button type="submit" class="btn">Generate Custom Forecast</button>
+                     </div>
+                  </form>
+                  {% if user_message %}
+                  <div class="message">{{ user_message }}</div>
+                  {% endif %}
+               </div>
+               {% if user_message %}
+               <div class="message">{{ user_message }}</div>
+               {% endif %}
+            </div>
+            {% if user_output %}
+            <div class="output-box">
+               <h3>Custom Forecast Results</h3>
+               <table>
+                  <thead>
+                     <tr>
+                        <th>Date</th>
+                        <th>Temperature (°C)</th>
+                        <th>Wind Speed (km/h)</th>
+                        <th>Residential Load (M)</th>
+                        <th>C&amp;I Load (M)</th>
+                     </tr>
+                  </thead>
+                  <tbody>
+                     {% for row in user_output %}
+                     <tr>
+                        <td>{{ row.date }}</td>
+                        <td>{{ row.temperature }}</td>
+                        <td>{{ row.wind_speed }}</td>
+                        <td>{{ "%.2f"|format(row.forecast_residential_load) }}</td>
+                        <td>{{ "%.2f"|format(row.forecast_ci_load) }}</td>
+                     </tr>
+                     {% endfor %}
+                  </tbody>
+               </table>
+            </div>
+            {% endif %}
+         </div>
       </div>
-    </div>
-
-    <div class="card">
-      <h2>Today's Weather</h2>
-      <div class="weather-main">
-        <div class="weather-sub">{{ weather_data.city }}</div>
-        <div class="weather-temp">{{ weather_data.temperature }}°C</div>
-        <div class="weather-sub">Feels like {{ weather_data.feels_like }}°C</div>
-        <div class="weather-details">
-          {{ weather_data.date }} • {{ weather_data.humidity }}% humidity • {{ weather_data.wind_speed }} km/h wind
-          <br>
-          {{ weather_data.condition }}
-        </div>
       </div>
-    </div>
-
-    <div class="card">
-      <h2>Next Forecast Day</h2>
-      <p class="section-text">
-        The following day reflects the next available model output based on projected weather conditions
-        and the regression-based demand relationship for {{ selected_city }}.
-      </p>
-
-      <div class="summary-grid">
-        <div class="mini-box">
-          <div class="mini-label">Date</div>
-          <div class="mini-value">{{ next_day.date }}</div>
-          <div class="mini-caption">Next forecasted day</div>
-        </div>
-        <div class="mini-box">
-          <div class="mini-label">Residential Load</div>
-          <div class="mini-value">{{ "%.2f"|format(next_day.forecast_residential_load) }}M</div>
-          <div class="mini-caption">Projected residential demand</div>
-        </div>
-        <div class="mini-box">
-          <div class="mini-label">C&amp;I Load</div>
-          <div class="mini-value">{{ "%.2f"|format(next_day.forecast_ci_load) }}M</div>
-          <div class="mini-caption">Projected commercial &amp; industrial demand</div>
-        </div>
       </div>
-    </div>
-
-    <div class="card">
-      <h2>16-Day Load Forecast</h2>
-      <p class="section-text">
-        Forecast values below show the projected daily Residential and Commercial &amp; Industrial load
-        for {{ selected_city }} over a 16-day horizon, based on weather-driven regression output.
-      </p>
-
-      <table>
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Temperature (°C)</th>
-            <th>Wind Speed (km/h)</th>
-            <th>Residential Load (M)</th>
-            <th>C&amp;I Load (M)</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for row in load_data %}
-          <tr>
-            <td>{{ row.date }}</td>
-            <td>{{ row.temperature }}</td>
-            <td>{{ row.wind_speed }}</td>
-            <td>{{ "%.2f"|format(row.forecast_residential_load) }}</td>
-            <td>{{ "%.2f"|format(row.forecast_ci_load) }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-
-      <div class="footer-note">
-        Displayed forecast horizon: 16 daily observations for {{ selected_city }}
       </div>
-    </div>
-
-    <div class="card">
-      <h2>User Input Forecast</h2>
-      <p class="section-text">
-        Users can provide custom forecasting inputs through the interface to generate sample forecast
-        outputs for a selected city. This section demonstrates how user-entered values can be integrated
-        into the dashboard workflow.
-      </p>
-
-      <div class="user-panel">
-        <div class="form-box">
-          <h3>Enter Forecast Inputs</h3>
-          <form method="POST">
-            <div class="form-group">
-              <label>City</label>
-              <select name="user_city">
-                {% for city in cities %}
-                  <option value="{{ city }}">{{ city }}</option>
-                {% endfor %}
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label>Projected Temperature (°C)</label>
-              <input type="number" placeholder="e.g. 11">
-            </div>
-
-            <div class="form-group">
-              <label>Projected Wind Speed (km/h)</label>
-              <input type="number" placeholder="e.g. 13">
-            </div>
-
-            <div class="form-group">
-              <label>Projected Humidity (%)</label>
-              <input type="number" placeholder="e.g. 58">
-            </div>
-
-            <div class="form-group">
-              <label>Forecast Horizon (days)</label>
-              <input type="number" placeholder="e.g. 5">
-            </div>
-
-            <div class="btn-row">
-              <button type="submit" class="btn">Run Forecast</button>
-              <button type="button" class="btn btn-secondary">Download Template</button>
-            </div>
-          </form>
-
-          <div class="small-note">
-            This interface is designed to demonstrate how user-provided inputs can be passed through a
-            forecasting workflow and returned as structured output.
-          </div>
-
-          {% if user_message %}
-          <div class="message">{{ user_message }}</div>
-          {% endif %}
-        </div>
-
-        <div class="output-box">
-          <h3>Sample Output</h3>
-
-          {% if user_output %}
-          <table>
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Res (M)</th>
-                <th>C&amp;I (M)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for row in user_output %}
-              <tr>
-                <td>{{ row.date }}</td>
-                <td>{{ "%.2f"|format(row.forecast_residential_load) }}</td>
-                <td>{{ "%.2f"|format(row.forecast_ci_load) }}</td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-          {% else %}
-          <div class="small-note">
-            Sample forecast outputs will appear here after the user submits custom inputs.
-          </div>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-
-  </div>
-</body>
+   </body>
 </html>

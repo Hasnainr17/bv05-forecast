@@ -1,61 +1,71 @@
 from flask import Flask, render_template, request
+import uuid
 from datetime import datetime, timedelta
-from load_forecast_json_and_csv import run_load_forecast_pipeline
+import os
+import pandas as pd
+from datetime import datetime, timedelta
+from user_load_forecast import run_user_forecast
+from load_forecast_json_and_csv_upgraded import (
+    train_models_from_historical_csv, 
+    forecast_daily_load, 
+    load_forecast_weather_from_csv, 
+    DATA_DIR, 
+    LOCATIONS
+)
 
 app = Flask(__name__)
 
 CITIES = ["Toronto", "Ottawa", "Hamilton", "London", "Mississauga", "Brampton"]
 
 
-def build_weather(city):
-    weather_map = {
-        "Toronto": {"temp": 10, "feels": 6.8, "humidity": 60, "wind": 12, "condition": "Partly cloudy"},
-        "Ottawa": {"temp": 8, "feels": 5.9, "humidity": 57, "wind": 14, "condition": "Cloudy"},
-        "Hamilton": {"temp": 9, "feels": 6.4, "humidity": 58, "wind": 11, "condition": "Mostly cloudy"},
-        "London": {"temp": 11, "feels": 7.3, "humidity": 55, "wind": 10, "condition": "Partly cloudy"},
-        "Mississauga": {"temp": 10, "feels": 6.7, "humidity": 59, "wind": 12, "condition": "Partly cloudy"},
-        "Brampton": {"temp": 9, "feels": 6.1, "humidity": 61, "wind": 13, "condition": "Cloudy"},
-    }
-    w = weather_map.get(city, weather_map["Toronto"])
+def build_weather(city, load_data):
+    # Use the actual data from the modul (Coming from Forecasted Output Folder)
+    if load_data:
+        current = load_data[0]
+        # print(f"Debug: Available keys are: {load_data[0].keys()}")
+        return {
+            "city": city,
+            "date": current.get("date", datetime.now().strftime("%Y-%m-%d")),
+            "temperature": current.get("temperature", "N/A"),
+            "wind_speed": current.get("wind_speed", "N/A"),
+            # May need to implement this if critical to website
+            "humidity": current.get("humidity", "N/A"),
+            "condition": "Data-Driven",
+            "feels_like": round(current.get("temperature", 0) * 0.9, 1)
+        }
     return {
         "city": city,
-        "date": "2026-03-30",
-        "temperature": w["temp"],
-        "feels_like": w["feels"],
-        "humidity": w["humidity"],
-        "wind_speed": w["wind"],
-        "condition": w["condition"],
+        "date": datetime.now().strftime("%Y-%m-%d"),
+        "temperature": "N/A",
+        "condition": "No Data Available"
     }
 
 
 def build_load_forecast(city):
-    # Call your actual regression pipeline
     try:
-        out_df, csv_path, json_path, metrics = run_load_forecast_pipeline(city=city)
+        # Define paths for the specific city using the new script's logic
+        hist_path = DATA_DIR / LOCATIONS[city]
+        weather_fc_path = DATA_DIR / f"{city}_forecast_daily_weather.csv"
         
-        # Student D's HTML expects a list of dictionaries, so we convert your Pandas DataFrame
+        # Check if the required data files exist
+        if not hist_path.exists() or not weather_fc_path.exists():
+            print(f"Missing data files for {city}. Run the batch script first.")
+            return []
+
+        # Load the pre-fetched weather data
+        forecast_df = load_forecast_weather_from_csv(weather_fc_path)
+
+        # Train the OLS model to forecast the load
+        res_model, ci_model = train_models_from_historical_csv(hist_path)
+
+        # Predict the 16-day load forecast
+        out_df = forecast_daily_load(res_model, ci_model, forecast_df)
+        
         return out_df.to_dict(orient='records')
         
     except Exception as e:
         print(f"Error running real forecast for {city}: {e}")
-        # If your script fails (e.g., missing data), return an empty list so the site doesn't crash
         return []
-
-
-def build_user_output(city):
-    start = datetime.today()
-    rows = []
-    for i in range(5):
-        rows.append({
-            "date": (start + timedelta(days=i)).strftime("%Y-%m-%d"),
-            "temperature": 9 + i,
-            "wind_speed": 10 + (i % 3),
-            "forecast_residential_load": round(13.75 + (i * 0.09), 2),
-            "forecast_ci_load": round(4.62 + (i * 0.05), 2),
-            "city": city,
-        })
-    return rows
-
 
 @app.route("/", methods=["GET", "POST"])
 def home():
@@ -63,41 +73,74 @@ def home():
     if city not in CITIES:
         city = "Toronto"
 
-    weather_data = build_weather(city)
-# 1. Get the fake weather (we will overwrite the important parts)
-    weather_data = build_weather(city)
-    
-    # 2. Get the REAL data from your OLS regression pipeline
-    load_data = build_load_forecast(city)
-    
-    # Safety Check: Did the engine actually return data?
-    if load_data:
-        latest_load = load_data[0]
-        next_day = load_data[1]
-        
-        # 3. OVERRIDE the fake weather with the real CSV data for today
-        weather_data["date"] = latest_load["date"]
-        weather_data["temperature"] = latest_load["temperature"]
-        weather_data["wind_speed"] = latest_load["wind_speed"]
-        
-    else:
-        # Fallback empty state so the server doesn't crash
-        latest_load = {"temperature": "N/A", "forecast_residential_load": "Error", "forecast_ci_load": "Error"}
-        next_day = {"temperature": "N/A", "forecast_residential_load": "Error", "forecast_ci_load": "Error"}
-        weather_data["date"] = "Error"
-    latest_load = load_data[0]
-    next_day = load_data[1]
-
+    # Define the variables needed by the template
+    input_dates = [(datetime.today() + timedelta(days=i)).strftime("%Y-%m-%d") for i in range(5)]
     user_output = None
     user_message = None
 
+    # Fetch the load data first
+    load_data = build_load_forecast(city)
+    
+    # Pass the data into build_weather
+    weather_data = build_weather(city, load_data)
+    
+    # Handle the actual data
+    if load_data and len(load_data) >= 2:
+        latest_load = load_data[0]
+        next_day = load_data[1]
+        
+        # Load the weather data into the CSV data
+        weather_data["date"] = latest_load["date"]
+        weather_data["temperature"] = latest_load["temperature"]
+        weather_data["wind_speed"] = latest_load["wind_speed"]
+    else:
+        latest_load = {"temperature": "N/A", "forecast_residential_load": 0, "forecast_ci_load": 0}
+        next_day = {"temperature": "N/A", "forecast_residential_load": 0, "forecast_ci_load": 0}
+  
+        if "date" not in weather_data:
+            weather_data["date"] = "No Data"
+
     if request.method == "POST":
         selected_city = request.form.get("user_city", city)
-        if selected_city not in CITIES:
-            selected_city = city
+        try:
+            temp_list = []
+            wind_list = []
+            date_list = []
 
-        user_output = build_user_output(selected_city)
-        user_message = f"Sample forecast output generated for {selected_city}."
+            # Grab the data from the website from user
+            for i in range(5):
+                d = request.form.get(f"date_{i}")
+                t = request.form.get(f"temp_{i}")
+                w = request.form.get(f"wind_{i}")
+
+                date_list.append(d)
+                temp_list.append(float(t))
+                wind_list.append(float(w))
+
+            unique_filename = f"user_input_formatted_from_website.csv"
+            
+            # Create the data frame
+            df_input = pd.DataFrame({
+                "Date": date_list, 
+                "temperature_2m_mean (°C)": temp_list,
+                "wind_speed_10m_mean (km/h)": wind_list
+            })
+            
+            # Run load forecast with user data
+            df_input.to_csv(unique_filename, index=False)
+            output_excel_path = run_user_forecast(unique_filename, selected_city)
+            
+            df_out = pd.read_excel(output_excel_path)
+            user_output = df_out.to_dict(orient='records')
+            user_message = f"Success! 5-day forecast generated for {selected_city}."
+            
+            # Remove the user file
+            if os.path.exists(unique_filename):
+                os.remove(unique_filename)
+
+
+        except Exception as e:
+            user_message = f"Error: {e}"
 
     return render_template(
         "index.html",
@@ -109,6 +152,7 @@ def home():
         next_day=next_day,
         user_output=user_output,
         user_message=user_message,
+        input_dates=input_dates,
     )
 
 
