@@ -96,6 +96,9 @@ DOW_COL = "Day of the week"
 TEMP_COL = "temperature_2m_mean (°C)"
 WIND_COL = "wind_speed_10m_mean (km/h)"
 
+# Added humidity
+#HUMID_COL = "relative_humidity_2m_mean (%)"
+
 RES_TARGET_COL = "Total Residential Consumption"
 CI_TARGET_COL = "Total CI Consumption"
 
@@ -462,6 +465,18 @@ def normalize_forecast_weather(df: pd.DataFrame) -> pd.DataFrame:
 
     # Drop rows with missing predictors
     d = d[d[TEMP_COL].notna() & d[WIND_COL].notna() & d[DOW_COL].notna()].copy()
+
+    # Added Humidity
+    #if HUMID_COL not in d.columns:
+    #    for alt in ["relative_humidity_2m_mean", "humidity", "relative_humidity"]:
+    #        if alt in d.columns:
+    #            d = d.rename(columns={alt: HUMID_COL})
+    #            break
+    ## Ensure it's numeric
+    #if HUMID_COL in d.columns:
+    #    d[HUMID_COL] = pd.to_numeric(d[HUMID_COL], errors="coerce")
+
+
     return d
 
 
@@ -485,6 +500,8 @@ def forecast_daily_load(
         # Useful for debugging/QA:
         "temperature": fw[TEMP_COL].to_numpy(dtype=float),
         "wind_speed": fw[WIND_COL].to_numpy(dtype=float),
+        # Added humidity
+        #"humidity": fw[HUMID_COL].to_numpy(dtype=float),
     })
     return out
 

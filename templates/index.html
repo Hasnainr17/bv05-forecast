@@ -220,6 +220,7 @@
          gap: 12px;
          flex-wrap: wrap;
          margin-top: 8px;
+         justify-content: center;
          }
          .btn-secondary {
          background: rgba(255,255,255,0.1);
@@ -233,6 +234,7 @@
          background: rgba(34, 197, 94, 0.15);
          color: #dcfce7;
          font-weight: 600;
+         text-align: center;
          }
          .small-note {
          font-size: 0.92rem;
@@ -289,11 +291,11 @@
                <div class="weather-sub">{{ weather_data.city }}</div>
                <div class="weather-temp">{{ weather_data.temperature }}°C</div>
                <!-- <div class="weather-sub">Feels like {{ weather_data.feels_like }}°C</div> -->
-               <!-- <div class="weather-details">
-                  {{ weather_data.date }} • {{ weather_data.humidity }}% humidity • {{ weather_data.wind_speed }} km/h wind
+               <div class="weather-details">
+                  {{ weather_data.wind_speed }} km/h wind speed
                   <br>
                   {{ weather_data.condition }}
-               </div> -->
+               </div>
             </div>
          </div>
          <div class="card">
@@ -310,12 +312,12 @@
                </div>
                <div class="mini-box">
                   <div class="mini-label">Residential Load</div>
-                  <div class="mini-value">{{ "%.2f"|format(next_day.forecast_residential_load) }}M</div>
+                  <div class="mini-value">{{ "%.2f"|format(next_day.forecast_residential_load) }}Wh</div>
                   <div class="mini-caption">Projected residential demand</div>
                </div>
                <div class="mini-box">
                   <div class="mini-label">C&amp;I Load</div>
-                  <div class="mini-value">{{ "%.2f"|format(next_day.forecast_ci_load) }}M</div>
+                  <div class="mini-value">{{ "%.2f"|format(next_day.forecast_ci_load) }}Wh</div>
                   <div class="mini-caption">Projected commercial &amp; industrial demand</div>
                </div>
             </div>
@@ -332,8 +334,8 @@
                      <th>Date</th>
                      <th>Temperature (°C)</th>
                      <th>Wind Speed (km/h)</th>
-                     <th>Residential Load (M)</th>
-                     <th>C&amp;I Load (M)</th>
+                     <th>Residential Load (Wh)</th>
+                     <th>C&amp;I Load (Wh)</th>
                   </tr>
                </thead>
                <tbody>
@@ -352,6 +354,7 @@
                Displayed forecast horizon: 16 daily observations for {{ selected_city }}
             </div>
          </div>
+         
          <div class="card">
             <h2>User Input Forecast</h2>
             <p class="section-text">
@@ -365,6 +368,7 @@
             <div class="user-panel">
                <div class="form-box">
                   <form method="POST">
+                     <input type="hidden" name="form_type" value="manual_input">
                      <div class="form-group" style="margin-bottom: 20px;">
                         <label>Select City</label>
                         <select name="user_city" style="max-width: 300px;">
@@ -387,13 +391,19 @@
                            <tr>
                               <td style="color: #9fd0ff; font-weight: 600;">Day {{ i + 1 }}</td>
                               <td>
-                                 <input type="date" name="date_{{ i }}" value="{{ input_dates[i] }}" class="clean-input" required>
+                                 <input type="date" name="date_{{ i }}" 
+                                    value="{{ user_submitted_data[i].date }}" 
+                                    class="clean-input" required>
                               </td>
                               <td>
-                                 <input type="number" name="temp_{{ i }}" step="0.1" placeholder="0.0" class="clean-input" required>
+                                 <input type="number" name="temp_{{ i }}" step="0.1" 
+                                    value="{{ user_submitted_data[i].temp }}" 
+                                    placeholder="0.0" class="clean-input" required>
                               </td>
                               <td>
-                                 <input type="number" name="wind_{{ i }}" step="0.1" placeholder="0.0" class="clean-input" required>
+                                 <input type="number" name="wind_{{ i }}" step="0.1" 
+                                    value="{{ user_submitted_data[i].wind }}" 
+                                    placeholder="0.0" class="clean-input" required>
                               </td>
                            </tr>
                            {% endfor %}
@@ -403,25 +413,61 @@
                         <button type="submit" class="btn">Generate Custom Forecast</button>
                      </div>
                   </form>
-                  {% if user_message %}
-                  <div class="message">{{ user_message }}</div>
-                  {% endif %}
                </div>
-               {% if user_message %}
-               <div class="message">{{ user_message }}</div>
-               {% endif %}
             </div>
-            {% if user_output %}
+         </div>
+
+         <div class="card">
+            <h2>Bulk File Upload</h2>
+            <p class="section-text">
+               Have a large dataset? Upload your own CSV or Excel file containing weather projections. 
+               Make sure your columns are named exactly: <b>Date</b>, <b>temperature_2m_mean (°C)</b>, and <b>wind_speed_10m_mean (km/h)</b>.
+            </p>
+            <div class="user-panel">
+               <div class="form-box">
+                  <form method="POST" enctype="multipart/form-data" style="display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap; justify-content: center;">
+                     <input type="hidden" name="form_type" value="file_upload">
+                     
+                     <div class="form-group" style="margin-bottom: 0;">
+                        <label style="display: block; margin-bottom: 8px;">Select City</label>
+                        <select name="user_city" style="width: 200px;">
+                           {% for city in cities %}
+                           <option value="{{ city }}" {% if city == selected_city %}selected{% endif %}>{{ city }}</option>
+                           {% endfor %}
+                        </select>
+                     </div>
+                     <div class="form-group" style="margin-bottom: 0;">
+                        <label style="display: block; margin-bottom: 8px;">Upload File (.csv, .xlsx)</label>
+                        <input type="file" name="upload_file" accept=".csv, .xlsx, .xls" style="background: #f8fafc; padding: 12px; border-radius: 12px; width: 100%;" required>
+                     </div>
+                     <button type="submit" class="btn" style="height: 46px;">Process File</button>
+                  </form>
+               </div>
+            </div>
+         </div>
+
+         {% if user_message %}
+         <div class="message">{{ user_message }}</div>
+         {% endif %}
+
+         {% if user_output %}
+         <div class="card">
             <div class="output-box">
-               <h3>Custom Forecast Results</h3>
+               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                  <h3 style="margin: 0;">Custom Forecast Results</h3>
+                  <a href="{{ url_for('download_file', filename=selected_city + '_user_forecast.xlsx') }}" 
+                     class="btn" style="text-decoration: none; padding: 10px 16px; font-size: 0.9rem; background: #10b981;">
+                  &darr; Download Excel
+                  </a>
+               </div>
                <table>
                   <thead>
                      <tr>
                         <th>Date</th>
                         <th>Temperature (°C)</th>
                         <th>Wind Speed (km/h)</th>
-                        <th>Residential Load (M)</th>
-                        <th>C&amp;I Load (M)</th>
+                        <th>Residential Load (Wh)</th>
+                        <th>C&amp;I Load (Wh)</th>
                      </tr>
                   </thead>
                   <tbody>
@@ -437,11 +483,8 @@
                   </tbody>
                </table>
             </div>
-            {% endif %}
          </div>
-      </div>
-      </div>
-      </div>
+         {% endif %}
       </div>
    </body>
 </html>
