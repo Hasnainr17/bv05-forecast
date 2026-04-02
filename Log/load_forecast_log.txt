@@ -1,11 +1,4 @@
-2026-04-01 23:46:28,757 - INFO - Loading forecast weather CSV: C:\Users\jamis\Desktop\bv05-forecast\Data\Toronto_forecast_daily_weather.csv
-2026-04-01 23:46:28,767 - INFO - Loading historical CSV: C:\Users\jamis\Desktop\bv05-forecast\Data\Toronto_his_load.csv
-2026-04-01 23:46:29,200 - INFO - Transition temperature for 'Total Residential Consumption': 16.03 °C | cold n=638 hot n=274
-2026-04-01 23:46:29,617 - INFO - Transition temperature for 'Total CI Consumption': 13.55 °C | cold n=570 hot n=342
-2026-04-01 23:46:38,446 - INFO - Loading forecast weather CSV: C:\Users\jamis\Desktop\bv05-forecast\Data\Toronto_forecast_daily_weather.csv
-2026-04-01 23:46:38,452 - INFO - Loading historical CSV: C:\Users\jamis\Desktop\bv05-forecast\Data\Toronto_his_load.csv
-2026-04-01 23:46:38,868 - INFO - Transition temperature for 'Total Residential Consumption': 16.03 °C | cold n=638 hot n=274
-2026-04-01 23:46:39,284 - INFO - Transition temperature for 'Total CI Consumption': 13.55 °C | cold n=570 hot n=342
-2026-04-01 23:46:39,320 - INFO - Loading historical CSV: C:\Users\jamis\Desktop\bv05-forecast\Data\Toronto_his_load.csv
-2026-04-01 23:46:39,746 - INFO - Transition temperature for 'Total Residential Consumption': 16.03 °C | cold n=638 hot n=274
-2026-04-01 23:46:40,159 - INFO - Transition temperature for 'Total CI Consumption': 13.55 °C | cold n=570 hot n=342
+2026-04-01 23:58:23,932 - INFO - Loading forecast weather CSV: C:\Users\jamis\Desktop\bv05-forecast\Data\Toronto_forecast_daily_weather.csv
+2026-04-01 23:58:23,940 - INFO - Loading historical CSV: C:\Users\jamis\Desktop\bv05-forecast\Data\Toronto_his_load.csv
+2026-04-01 23:58:24,194 - INFO - Transition temperature for 'Total Residential Consumption': 16.03 °C | cold n=638 hot n=274
+2026-04-01 23:58:24,508 - INFO - Transition temperature for 'Total CI Consumption': 13.55 °C | cold n=570 hot n=342
