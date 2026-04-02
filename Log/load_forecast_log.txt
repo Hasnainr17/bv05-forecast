@@ -1,0 +1,21 @@
+2026-04-01 21:21:28,527 - INFO - Running load forecast pipeline for Toronto
+2026-04-01 21:21:29,063 - INFO - Loading historical CSV: C:\Users\jamis\Desktop\bv05-forecast\Data\toronto_his_load.csv
+2026-04-01 21:21:29,344 - INFO - Transition temperature for 'Total Residential Consumption': 16.03 °C | cold n=638 hot n=274
+2026-04-01 21:21:29,715 - INFO - Transition temperature for 'Total CI Consumption': 13.55 °C | cold n=570 hot n=342
+2026-04-01 21:21:29,737 - INFO - Saved forecast CSV: C:\Users\jamis\Desktop\bv05-forecast\Forecasted Output\toronto_forecast_daily_load.csv
+2026-04-01 21:21:29,740 - INFO - Saved forecast JSON: C:\Users\jamis\Desktop\bv05-forecast\Forecasted Output\toronto_forecast_daily_load.json
+2026-04-01 21:21:29,772 - INFO - Validation metrics for Toronto: {'residential': {'RMSE': 921483.6711629438, 'RMSPE': 6.506341443236134}, 'ci': {'RMSE': 205351.32008311903, 'RMSPE': 4.72454468723842}}
+2026-04-01 21:21:31,704 - INFO - Running load forecast pipeline for Toronto
+2026-04-01 21:21:32,226 - INFO - Loading historical CSV: C:\Users\jamis\Desktop\bv05-forecast\Data\toronto_his_load.csv
+2026-04-01 21:21:32,514 - INFO - Transition temperature for 'Total Residential Consumption': 16.03 °C | cold n=638 hot n=274
+2026-04-01 21:21:32,778 - INFO - Transition temperature for 'Total CI Consumption': 13.55 °C | cold n=570 hot n=342
+2026-04-01 21:21:32,794 - INFO - Saved forecast CSV: C:\Users\jamis\Desktop\bv05-forecast\Forecasted Output\toronto_forecast_daily_load.csv
+2026-04-01 21:21:32,796 - INFO - Saved forecast JSON: C:\Users\jamis\Desktop\bv05-forecast\Forecasted Output\toronto_forecast_daily_load.json
+2026-04-01 21:21:32,824 - INFO - Validation metrics for Toronto: {'residential': {'RMSE': 921483.6711629438, 'RMSPE': 6.506341443236134}, 'ci': {'RMSE': 205351.32008311903, 'RMSPE': 4.72454468723842}}
+2026-04-01 21:25:44,669 - INFO - Running load forecast pipeline for Ottawa
+2026-04-01 21:25:45,220 - INFO - Loading historical CSV: C:\Users\jamis\Desktop\bv05-forecast\Data\ottawa_his_load.csv
+2026-04-01 21:25:45,618 - INFO - Transition temperature for 'Total Residential Consumption': 14.99 °C | cold n=612 hot n=300
+2026-04-01 21:25:45,984 - INFO - Transition temperature for 'Total CI Consumption': 13.52 °C | cold n=573 hot n=339
+2026-04-01 21:25:46,002 - INFO - Saved forecast CSV: C:\Users\jamis\Desktop\bv05-forecast\Forecasted Output\ottawa_forecast_daily_load.csv
+2026-04-01 21:25:46,030 - INFO - Saved forecast JSON: C:\Users\jamis\Desktop\bv05-forecast\Forecasted Output\ottawa_forecast_daily_load.json
+2026-04-01 21:25:46,064 - INFO - Validation metrics for Ottawa: {'residential': {'RMSE': 1073454.1801374601, 'RMSPE': 6.105930291692672}, 'ci': {'RMSE': 143717.82306582213, 'RMSPE': 4.190399562187884}}

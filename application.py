@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request
 from datetime import datetime, timedelta
+from load_forecast_json_and_csv import run_load_forecast_pipeline
 
 app = Flask(__name__)
 
@@ -28,33 +29,21 @@ def build_weather(city):
 
 
 def build_load_forecast(city):
-    base_values = {
-        "Toronto": (14.32, 4.95),
-        "Ottawa": (13.11, 4.51),
-        "Hamilton": (12.48, 4.63),
-        "London": (11.92, 4.22),
-        "Mississauga": (13.88, 4.81),
-        "Brampton": (13.44, 4.67),
-    }
-
-    res_base, ci_base = base_values.get(city, (14.32, 4.95))
-    start = datetime(2026, 3, 30)
-
-    rows = []
-    for i in range(16):
-        rows.append({
-            "date": (start + timedelta(days=i)).strftime("%Y-%m-%d"),
-            "forecast_residential_load": round((res_base + (i * 0.07) - ((i % 3) * 0.03)), 2),
-            "forecast_ci_load": round((ci_base + (i * 0.04) - ((i % 4) * 0.02)), 2),
-            "temperature": 8 + (i % 6),
-            "wind_speed": 10 + (i % 4),
-            "city": city,
-        })
-    return rows
+    # Call your actual regression pipeline
+    try:
+        out_df, csv_path, json_path, metrics = run_load_forecast_pipeline(city=city)
+        
+        # Student D's HTML expects a list of dictionaries, so we convert your Pandas DataFrame
+        return out_df.to_dict(orient='records')
+        
+    except Exception as e:
+        print(f"Error running real forecast for {city}: {e}")
+        # If your script fails (e.g., missing data), return an empty list so the site doesn't crash
+        return []
 
 
 def build_user_output(city):
-    start = datetime(2026, 3, 30)
+    start = datetime.today()
     rows = []
     for i in range(5):
         rows.append({
@@ -75,7 +64,27 @@ def home():
         city = "Toronto"
 
     weather_data = build_weather(city)
+# 1. Get the fake weather (we will overwrite the important parts)
+    weather_data = build_weather(city)
+    
+    # 2. Get the REAL data from your OLS regression pipeline
     load_data = build_load_forecast(city)
+    
+    # Safety Check: Did the engine actually return data?
+    if load_data:
+        latest_load = load_data[0]
+        next_day = load_data[1]
+        
+        # 3. OVERRIDE the fake weather with the real CSV data for today
+        weather_data["date"] = latest_load["date"]
+        weather_data["temperature"] = latest_load["temperature"]
+        weather_data["wind_speed"] = latest_load["wind_speed"]
+        
+    else:
+        # Fallback empty state so the server doesn't crash
+        latest_load = {"temperature": "N/A", "forecast_residential_load": "Error", "forecast_ci_load": "Error"}
+        next_day = {"temperature": "N/A", "forecast_residential_load": "Error", "forecast_ci_load": "Error"}
+        weather_data["date"] = "Error"
     latest_load = load_data[0]
     next_day = load_data[1]
 
