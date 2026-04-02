@@ -1,5 +1,13 @@
 # Ignore the virtual environment
 venv/
+env/
+.env
+
+# Python artifacts
+__pycache__/
+*.pyo
+*.pyd
+
 
 # Ignore local junk
 personal_computer.txt
@@ -15,3 +23,4 @@ temp_input_*.csv
 # Ignore compiled python files
 __pycache__/
 *.pyc
+Forecasted Output/
