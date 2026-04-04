@@ -58,12 +58,12 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 VALIDATION_DIR.mkdir(parents=True, exist_ok=True)
 
 LOCATIONS = {
-    "Toronto": "toronto_his_load.csv",
-    "Ottawa": "ottawa_his_load.csv",
-    "Hamilton": "hamilton_his_load.csv",
-    "Mississauga": "mississauga_his_load.csv",
-    "Brampton": "brampton_his_load.csv",
-    "London": "london_his_load.csv"
+    "Toronto": "Toronto_his_load.csv",
+    "Ottawa": "Ottawa_his_load.csv",
+    "Hamilton": "Hamilton_his_load.csv",
+    "Mississauga": "Mississauga_his_load.csv",
+    "Brampton": "Brampton_his_load.csv",
+    "London": "London_his_load.csv"
 }
 
 DEFAULT_LOG_FILE = "load_forecast_log.txt"
@@ -95,6 +95,9 @@ DATE_COL = "Date"
 DOW_COL = "Day of the week"
 TEMP_COL = "temperature_2m_mean (°C)"
 WIND_COL = "wind_speed_10m_mean (km/h)"
+
+# Added humidity
+#HUMID_COL = "relative_humidity_2m_mean (%)"
 
 RES_TARGET_COL = "Total Residential Consumption"
 CI_TARGET_COL = "Total CI Consumption"
@@ -462,6 +465,18 @@ def normalize_forecast_weather(df: pd.DataFrame) -> pd.DataFrame:
 
     # Drop rows with missing predictors
     d = d[d[TEMP_COL].notna() & d[WIND_COL].notna() & d[DOW_COL].notna()].copy()
+
+    # Added Humidity
+    #if HUMID_COL not in d.columns:
+    #    for alt in ["relative_humidity_2m_mean", "humidity", "relative_humidity"]:
+    #        if alt in d.columns:
+    #            d = d.rename(columns={alt: HUMID_COL})
+    #            break
+    ## Ensure it's numeric
+    #if HUMID_COL in d.columns:
+    #    d[HUMID_COL] = pd.to_numeric(d[HUMID_COL], errors="coerce")
+
+
     return d
 
 
@@ -485,6 +500,8 @@ def forecast_daily_load(
         # Useful for debugging/QA:
         "temperature": fw[TEMP_COL].to_numpy(dtype=float),
         "wind_speed": fw[WIND_COL].to_numpy(dtype=float),
+        # Added humidity
+        #"humidity": fw[HUMID_COL].to_numpy(dtype=float),
     })
     return out
 
@@ -529,19 +546,10 @@ def perform_validation(
     output_csv: str,
     hist_path: pd.DataFrame,
     city: str,
-    start_date: str,
-    end_date: str,
 ) -> Optional[Dict[str, Dict[str, float]]]:
     """
     Optional evaluation. If the file doesn't exist, returns None (no-op).
     """
-    # --- Validate date range ---
-    if start_date < "2023-01-01" or end_date > "2025-11-30":
-        raise ValueError("Date range must be within 2023-01-01 and 2025-11-30")
-
-    if start_date > end_date:
-        raise ValueError("Start date must be before end date")
-    
     # --- Define and create the Validation subfolder ---
     validation_dir = BASE_DIR / "Validation"
     validation_dir.mkdir(parents=True, exist_ok=True)
@@ -554,7 +562,7 @@ def perform_validation(
     ensure_datetime(df)
     ensure_dow(df)
     
-    mask = (df[DATE_COL] >= start_date) & (df[DATE_COL] <= end_date)
+    mask = (df[DATE_COL] >= '2025-01-01') & (df[DATE_COL] <= '2025-11-30')
     test_df = df.loc[mask].copy()
 
     if test_df.empty:
@@ -723,7 +731,7 @@ def run_load_forecast_pipeline(
         # 5) Evaluation (2025-01-01 to 2025-11-30)
         metrics = None
         if run_test_if_present:
-            metrics = perform_validation(res_model, ci_model, test_csv_filename, hist_path, city, "2025-01-01", "2025-11-30")
+            metrics = perform_validation(res_model, ci_model, test_csv_filename, hist_path, city)
 
     return out_df, csv_path, json_path, metrics
 
