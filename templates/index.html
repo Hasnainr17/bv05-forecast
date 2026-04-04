@@ -265,9 +265,9 @@
    <body>
       <div class="container">
          <div class="card hero">
-            <h1>Toronto Forecast Dashboard</h1>
+            <h1>Forecast Dashboard</h1>
             <p>
-               BV05 is a cloud-hosted regression-based platform for forecasting weather, residential load,
+               A cloud-hosted regression-based platform for forecasting weather, residential load,
                and commercial & industrial electricity demand. The dashboard integrates forecast outputs
                into one centralized web interface to support analysis, planning, and decision-making.
             </p>
@@ -285,19 +285,19 @@
                <div class="pill">{{ selected_city }} selected</div>
             </div>
          </div>
-         <div class="card">
+         <!-- <div class="card">
             <h2>Today's Weather</h2>
             <div class="weather-main">
                <div class="weather-sub">{{ weather_data.city }}</div>
                <div class="weather-temp">{{ weather_data.temperature }}°C</div>
-               <!-- <div class="weather-sub">Feels like {{ weather_data.feels_like }}°C</div> -->
+               <div class="weather-sub">Feels like {{ weather_data.feels_like }}°C</div>
                <div class="weather-details">
                   {{ weather_data.wind_speed }} km/h wind speed
                   <br>
                   {{ weather_data.condition }}
                </div>
             </div>
-         </div>
+         </div> -->
          <div class="card">
             <h2>Next Forecast Day</h2>
             <p class="section-text">
@@ -358,9 +358,7 @@
          <div class="card">
             <h2>User Input Forecast</h2>
             <p class="section-text">
-               Users can provide custom forecasting inputs through the interface to generate sample forecast
-               outputs for a selected city. This section demonstrates how user-entered values can be integrated
-               into the dashboard workflow.
+               Users can provide custom forecasting inputs through the interface to generate forecast outputs for a selected city.
             </p>
             <p class="section-text">
                Enter your custom weather parameters below to generate a specific 5-day load projection.
@@ -386,24 +384,35 @@
                               <th>Wind Speed (km/h)</th>
                            </tr>
                         </thead>
-                        <tbody>
+<tbody>
                            {% for i in range(5) %}
                            <tr>
                               <td style="color: #9fd0ff; font-weight: 600;">Day {{ i + 1 }}</td>
                               <td>
                                  <input type="date" name="date_{{ i }}" 
                                     value="{{ user_submitted_data[i].date }}" 
-                                    class="clean-input" required>
+                                    min="{{ min_date }}" max="{{ max_date }}"
+                                    oninvalid="this.setCustomValidity('Date must be within 1 year of today')"
+                                    oninput="this.setCustomValidity('')"
+                                    class="clean-input {% if input_errors and 'date_'~i in input_errors %}input-error{% endif %}" required>
                               </td>
                               <td>
                                  <input type="number" name="temp_{{ i }}" step="0.1" 
                                     value="{{ user_submitted_data[i].temp }}" 
-                                    placeholder="0.0" class="clean-input" required>
+                                    min="-25" max="35"
+                                    oninvalid="this.setCustomValidity('Temperature must be between -25°C and 35°C')"
+                                    oninput="this.setCustomValidity('')"
+                                    placeholder="0.0" 
+                                    class="clean-input {% if input_errors and 'temp_'~i in input_errors %}input-error{% endif %}" required>
                               </td>
                               <td>
                                  <input type="number" name="wind_{{ i }}" step="0.1" 
                                     value="{{ user_submitted_data[i].wind }}" 
-                                    placeholder="0.0" class="clean-input" required>
+                                    min="0" max="35"
+                                    oninvalid="this.setCustomValidity('Wind speed must be between 0 and 35 km/h')"
+                                    oninput="this.setCustomValidity('')"
+                                    placeholder="0.0" 
+                                    class="clean-input {% if input_errors and 'wind_'~i in input_errors %}input-error{% endif %}" required>
                               </td>
                            </tr>
                            {% endfor %}
@@ -421,8 +430,17 @@
             <h2>Bulk File Upload</h2>
             <p class="section-text">
                Have a large dataset? Upload your own CSV or Excel file containing weather projections. 
-               Make sure your columns are named exactly: <b>Date</b>, <b>temperature_2m_mean (°C)</b>, and <b>wind_speed_10m_mean (km/h)</b>.
+               <br> Ensure you follow the below steps for succesful forecasting:
+               <br> 1. Download the input template
+               <br> 2. Fill out the cells starting from the 2nd row
+               <br> 3. Upload back the same template file with the filled data
+               <br> Note: Read the second sheet of the input template file for the input data limitations.
             </p>
+            <div style="text-align: center; margin-bottom: 25px;">
+               <a href="{{ url_for('download_template') }}" class="btn" style="text-decoration: none; padding: 10px 16px; font-size: 0.95rem; background: #10b981;">
+                  &darr; Download Input Template
+               </a>
+            </div>
             <div class="user-panel">
                <div class="form-box">
                   <form method="POST" enctype="multipart/form-data" style="display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap; justify-content: center;">

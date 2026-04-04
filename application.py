@@ -103,6 +103,7 @@ def home():
     input_dates = [(datetime.today() + timedelta(days=i)).strftime("%Y-%m-%d") for i in range(5)]
     user_output = None
     user_message = None
+    input_errors = {}
 
     # Fetch the load data first
     load_data = build_load_forecast(city)
@@ -154,6 +155,11 @@ def home():
                 
                 temp_list, wind_list, date_list, new_data = [], [], [], []
 
+                # Calculate Date Boundaries (1 year past/future)
+                today = datetime.today().date()
+                one_year_ago = today - timedelta(days=365)
+                one_year_future = today + timedelta(days=365)
+
                 # Loop 5 times to extract the 5 rows of data from HTML
                 for i in range(5):
                     d = request.form.get(f"date_{i}")
@@ -161,10 +167,37 @@ def home():
                     w = request.form.get(f"wind_{i}")
 
                     new_data.append({"date": d, "temp": t, "wind": w})
-                    date_list.append(d)
-                    temp_list.append(float(t) if t else 0.0)
-                    wind_list.append(float(w) if w else 0.0)
-            
+
+                    # Check 1: Validate Date (Must be within 1 year)
+                    try:
+                        d_obj = datetime.strptime(d, "%Y-%m-%d").date()
+                        if d_obj < one_year_ago or d_obj > one_year_future:
+                            input_errors[f"date_{i}"] = True
+                        date_list.append(d)
+                    except ValueError:
+                        input_errors[f"date_{i}"] = True
+                        date_list.append(d)
+
+                    # Check 2: Validate Temperature (Between -25C and 35C)
+                    try:
+                        t_float = float(t)
+                        if t_float < -25.0 or t_float > 35.0:
+                            input_errors[f"temp_{i}"] = True
+                        temp_list.append(t_float)
+                    except (ValueError, TypeError):
+                        input_errors[f"temp_{i}"] = True
+                        temp_list.append(0.0)
+
+                    # Check 3: Validate Wind Speed (Between 0 and 35 km/h)
+                    try:
+                        w_float = float(w)
+                        if w_float < 0.0 or w_float > 35.0:
+                            input_errors[f"wind_{i}"] = True
+                        wind_list.append(w_float)
+                    except (ValueError, TypeError):
+                        input_errors[f"wind_{i}"] = True
+                        wind_list.append(0.0)
+                        
                 # Update the browser's memory so the numbers stay in the boxes
                 # Helps save time for the user if there are errors,
                 # then they just need to change the incorrect inputs
@@ -216,10 +249,31 @@ def home():
                 
                 # Save the uploaded file temporarily to the server
                 uploaded_file.save(target_filename)
-                
+
                 # Any erros in the input data is caught by the script
                 # And outputted to the website automatically
 
+                # Validation check for the user upload, to ensure no modification of template
+                if ext == 'csv':
+                    df_check = pd.read_csv(target_filename)
+                else:
+                    df_check = pd.read_excel(target_filename)
+
+                # Check 1: Is the file completely empty? Meaning no data and only headers
+                if df_check.empty:
+                    raise ValueError("The uploaded file contains headers but no data. Please add your daily values starting from row 2.")
+
+                # Check 2: Do the columns match the template exactly?
+                # Using .strip()if they accidentally typed a trailing space
+                actual_cols = [str(col).strip() for col in df_check.columns]
+                expected_cols = ["Date", "temperature_2m_mean (°C)", "wind_speed_10m_mean (km/h)"]
+                
+                # Find exactly which columns the user forgot or misspelled
+                missing_cols = [col for col in expected_cols if col not in actual_cols]
+                
+                if missing_cols:
+                    raise ValueError(f"Column Error! Your file is missing or misspelled these required columns: {', '.join(missing_cols)}. Please download the template to ensure the exact format.")
+                
             # Both options create the user forecasting results
             # Downloadable file
             output_excel_path = run_user_forecast(target_filename, selected_city)
@@ -251,7 +305,11 @@ def home():
         print(f"Debug: user_output has {len(user_output)} rows.")
     else:
         print(f"Debug: user_output has 0 rows.")
-   
+
+    # Generate the string versions of the date boundaries for the HTML
+    min_date_str = (datetime.today() - timedelta(days=365)).strftime("%Y-%m-%d")
+    max_date_str = (datetime.today() + timedelta(days=365)).strftime("%Y-%m-%d")
+    
     return render_template(
         "index.html",
         selected_city=city,
@@ -264,6 +322,9 @@ def home():
         user_message=user_message,
         user_submitted_data=user_submitted_data,
         input_dates=input_dates,
+        input_errors=input_errors,
+        min_date=min_date_str,
+        max_date=max_date_str
     )
 
 # Download option for user
@@ -278,6 +339,15 @@ def download_file(filename):
     # instead of trying to open it in a tab
     # print(f"Debug: Fetching from directory: {directory}")
     return send_from_directory(directory, filename, as_attachment=True)
+
+# Downloadable tempalte for the user to use
+@app.route('/download_template')
+def download_template():
+    # Location is in BASE_DIR where user_input_format.xlsx is located
+    try:
+        return send_from_directory(BASE_DIR, "user_input_format.xlsx", as_attachment=True)
+    except Exception as e:
+        return f"Error downloading template: {e}"
 
 if __name__ == "__main__":
     app.run(debug=True)
