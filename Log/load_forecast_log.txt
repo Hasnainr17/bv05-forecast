@@ -1,51 +1,8 @@
-2026-04-04 03:06:34,742 - INFO - Running load_forecast_csv.py directly...
-2026-04-04 03:06:34,742 - INFO - Triggering weather forecast script...
-2026-04-04 03:06:47,601 - INFO - Processing region: Toronto
-2026-04-04 03:06:47,601 - INFO - Loading forecast weather CSV: C:\Users\jamis\Desktop\bv05-forecast\Data\Toronto_forecast_daily_weather.csv
-2026-04-04 03:06:47,601 - INFO - Loading historical CSV: C:\Users\jamis\Desktop\bv05-forecast\Data\toronto_his_load.csv
-2026-04-04 03:06:47,723 - INFO - Transition temperature for 'Total Residential Consumption': 16.03 °C | cold n=638 hot n=274
-2026-04-04 03:06:47,835 - INFO - Transition temperature for 'Total CI Consumption': 13.55 °C | cold n=570 hot n=342
-2026-04-04 03:06:47,857 - INFO - Saved forecast CSV: C:\Users\jamis\Desktop\bv05-forecast\Forecasted Output\Toronto_forecasted_daily_load.csv
-2026-04-04 03:06:47,857 - INFO - Saved forecast JSON: C:\Users\jamis\Desktop\bv05-forecast\Forecasted Output\Toronto_forecasted_daily_load.json
-2026-04-04 03:06:48,102 - INFO - Test results for Toronto saved to: C:\Users\jamis\Desktop\bv05-forecast\Validation\Toronto_data_evaluation.xlsx
-2026-04-04 03:06:48,103 - INFO - Processing region: Ottawa
-2026-04-04 03:06:48,105 - INFO - Loading forecast weather CSV: C:\Users\jamis\Desktop\bv05-forecast\Data\Ottawa_forecast_daily_weather.csv
-2026-04-04 03:06:48,105 - INFO - Loading historical CSV: C:\Users\jamis\Desktop\bv05-forecast\Data\ottawa_his_load.csv
-2026-04-04 03:06:48,220 - INFO - Transition temperature for 'Total Residential Consumption': 14.99 °C | cold n=612 hot n=300
-2026-04-04 03:06:48,322 - INFO - Transition temperature for 'Total CI Consumption': 13.52 °C | cold n=573 hot n=339
-2026-04-04 03:06:48,332 - INFO - Saved forecast CSV: C:\Users\jamis\Desktop\bv05-forecast\Forecasted Output\Ottawa_forecasted_daily_load.csv
-2026-04-04 03:06:48,332 - INFO - Saved forecast JSON: C:\Users\jamis\Desktop\bv05-forecast\Forecasted Output\Ottawa_forecasted_daily_load.json
-2026-04-04 03:06:48,412 - INFO - Test results for Ottawa saved to: C:\Users\jamis\Desktop\bv05-forecast\Validation\Ottawa_data_evaluation.xlsx
-2026-04-04 03:06:48,412 - INFO - Processing region: Hamilton
-2026-04-04 03:06:48,412 - INFO - Loading forecast weather CSV: C:\Users\jamis\Desktop\bv05-forecast\Data\Hamilton_forecast_daily_weather.csv
-2026-04-04 03:06:48,422 - INFO - Loading historical CSV: C:\Users\jamis\Desktop\bv05-forecast\Data\hamilton_his_load.csv
-2026-04-04 03:06:48,534 - INFO - Transition temperature for 'Total Residential Consumption': 14.64 °C | cold n=582 hot n=330
-2026-04-04 03:06:48,644 - INFO - Transition temperature for 'Total CI Consumption': 14.02 °C | cold n=570 hot n=342
-2026-04-04 03:06:48,647 - INFO - Saved forecast CSV: C:\Users\jamis\Desktop\bv05-forecast\Forecasted Output\Hamilton_forecasted_daily_load.csv
-2026-04-04 03:06:48,658 - INFO - Saved forecast JSON: C:\Users\jamis\Desktop\bv05-forecast\Forecasted Output\Hamilton_forecasted_daily_load.json
-2026-04-04 03:06:48,729 - INFO - Test results for Hamilton saved to: C:\Users\jamis\Desktop\bv05-forecast\Validation\Hamilton_data_evaluation.xlsx
-2026-04-04 03:06:48,729 - INFO - Processing region: Mississauga
-2026-04-04 03:06:48,729 - INFO - Loading forecast weather CSV: C:\Users\jamis\Desktop\bv05-forecast\Data\Mississauga_forecast_daily_weather.csv
-2026-04-04 03:06:48,739 - INFO - Loading historical CSV: C:\Users\jamis\Desktop\bv05-forecast\Data\mississauga_his_load.csv
-2026-04-04 03:06:48,852 - INFO - Transition temperature for 'Total Residential Consumption': 15.78 °C | cold n=601 hot n=311
-2026-04-04 03:06:48,955 - INFO - Transition temperature for 'Total CI Consumption': 15.14 °C | cold n=587 hot n=325
-2026-04-04 03:06:48,970 - INFO - Saved forecast CSV: C:\Users\jamis\Desktop\bv05-forecast\Forecasted Output\Mississauga_forecasted_daily_load.csv
-2026-04-04 03:06:48,976 - INFO - Saved forecast JSON: C:\Users\jamis\Desktop\bv05-forecast\Forecasted Output\Mississauga_forecasted_daily_load.json
-2026-04-04 03:06:49,045 - INFO - Test results for Mississauga saved to: C:\Users\jamis\Desktop\bv05-forecast\Validation\Mississauga_data_evaluation.xlsx
-2026-04-04 03:06:49,045 - INFO - Processing region: Brampton
-2026-04-04 03:06:49,045 - INFO - Loading forecast weather CSV: C:\Users\jamis\Desktop\bv05-forecast\Data\Brampton_forecast_daily_weather.csv
-2026-04-04 03:06:49,056 - INFO - Loading historical CSV: C:\Users\jamis\Desktop\bv05-forecast\Data\brampton_his_load.csv
-2026-04-04 03:06:49,172 - INFO - Transition temperature for 'Total Residential Consumption': 15.33 °C | cold n=604 hot n=308
-2026-04-04 03:06:49,279 - INFO - Transition temperature for 'Total CI Consumption': 13.41 °C | cold n=560 hot n=352
-2026-04-04 03:06:49,291 - INFO - Saved forecast CSV: C:\Users\jamis\Desktop\bv05-forecast\Forecasted Output\Brampton_forecasted_daily_load.csv
-2026-04-04 03:06:49,293 - INFO - Saved forecast JSON: C:\Users\jamis\Desktop\bv05-forecast\Forecasted Output\Brampton_forecasted_daily_load.json
-2026-04-04 03:06:49,361 - INFO - Test results for Brampton saved to: C:\Users\jamis\Desktop\bv05-forecast\Validation\Brampton_data_evaluation.xlsx
-2026-04-04 03:06:49,361 - INFO - Processing region: London
-2026-04-04 03:06:49,361 - INFO - Loading forecast weather CSV: C:\Users\jamis\Desktop\bv05-forecast\Data\London_forecast_daily_weather.csv
-2026-04-04 03:06:49,371 - INFO - Loading historical CSV: C:\Users\jamis\Desktop\bv05-forecast\Data\london_his_load.csv
-2026-04-04 03:06:49,483 - INFO - Transition temperature for 'Total Residential Consumption': 16.14 °C | cold n=618 hot n=294
-2026-04-04 03:06:49,595 - INFO - Transition temperature for 'Total CI Consumption': 14.24 °C | cold n=569 hot n=343
-2026-04-04 03:06:49,605 - INFO - Saved forecast CSV: C:\Users\jamis\Desktop\bv05-forecast\Forecasted Output\London_forecasted_daily_load.csv
-2026-04-04 03:06:49,616 - INFO - Saved forecast JSON: C:\Users\jamis\Desktop\bv05-forecast\Forecasted Output\London_forecasted_daily_load.json
-2026-04-04 03:06:49,690 - INFO - Test results for London saved to: C:\Users\jamis\Desktop\bv05-forecast\Validation\London_data_evaluation.xlsx
-2026-04-04 03:06:49,690 - INFO - Done. Rows forecasted: 15 | CSV: C:\Users\jamis\Desktop\bv05-forecast\Forecasted Output\London_forecasted_daily_load.csv
+2026-04-04 03:41:51,748 - INFO - Loading forecast weather CSV: C:\Users\jamis\Desktop\bv05-forecast\Data\Toronto_forecast_daily_weather.csv
+2026-04-04 03:41:51,759 - INFO - Loading historical CSV: C:\Users\jamis\Desktop\bv05-forecast\Data\Toronto_his_load.csv
+2026-04-04 03:41:52,078 - INFO - Transition temperature for 'Total Residential Consumption': 16.03 °C | cold n=638 hot n=274
+2026-04-04 03:41:52,381 - INFO - Transition temperature for 'Total CI Consumption': 13.55 °C | cold n=570 hot n=342
+2026-04-04 03:42:01,142 - INFO - Loading forecast weather CSV: C:\Users\jamis\Desktop\bv05-forecast\Data\London_forecast_daily_weather.csv
+2026-04-04 03:42:01,146 - INFO - Loading historical CSV: C:\Users\jamis\Desktop\bv05-forecast\Data\London_his_load.csv
+2026-04-04 03:42:01,506 - INFO - Transition temperature for 'Total Residential Consumption': 16.14 °C | cold n=618 hot n=294
+2026-04-04 03:42:01,827 - INFO - Transition temperature for 'Total CI Consumption': 14.24 °C | cold n=569 hot n=343
