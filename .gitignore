@@ -24,3 +24,9 @@ temp_input_*.csv
 __pycache__/
 *.pyc
 Forecasted Output/
+
+# Ignore dynamically generated user files in the root directory
+*.xlsx
+*.csv
+*.xlsx
+*.xls

@@ -1,63 +1,63 @@
-2026-04-01 22:00:41,676 - INFO - Running batch forecast script for all known locations
-2026-04-01 22:00:41,676 - INFO - Starting weather data fetch for: Ottawa
-2026-04-01 22:00:41,680 - DEBUG - Starting new HTTPS connection (1): api.open-meteo.com:443
-2026-04-01 22:00:42,445 - DEBUG - https://api.open-meteo.com:443 "GET /v1/forecast?latitude=45.4112&longitude=-75.6981&daily=temperature_2m_mean,relative_humidity_2m_mean,wind_speed_10m_mean,cloud_cover_mean,precipitation_sum,shortwave_radiation_sum,apparent_temperature_mean,dew_point_2m_mean&timezone=America%2FNew_York&forecast_days=16 HTTP/1.1" 200 None
-2026-04-01 22:00:42,445 - INFO - Forecast data extracted for Ottawa.
-2026-04-01 22:00:42,445 - DEBUG - Forecasted data type received: <class 'dict'>
-2026-04-01 22:00:42,445 - INFO - Processing 16 days of forecast data for Ottawa.
-2026-04-01 22:00:42,445 - INFO - Finished forecast data processing for Ottawa.
-2026-04-01 22:00:42,456 - INFO - Final forecast data created for Ottawa.
-2026-04-01 22:00:42,474 - INFO - Forecast data saved to C:\Users\jamis\Desktop\bv05-forecast\Data\Ottawa_forecast_daily_weather.csv
-2026-04-01 22:00:42,485 - INFO - Forecast data saved to C:\Users\jamis\Desktop\bv05-forecast\Data\Ottawa_forecast_daily_weather.json
-2026-04-01 22:00:43,492 - INFO - Starting weather data fetch for: Mississauga
-2026-04-01 22:00:43,492 - DEBUG - Starting new HTTPS connection (1): api.open-meteo.com:443
-2026-04-01 22:00:44,050 - DEBUG - https://api.open-meteo.com:443 "GET /v1/forecast?latitude=43.5789&longitude=-79.6583&daily=temperature_2m_mean,relative_humidity_2m_mean,wind_speed_10m_mean,cloud_cover_mean,precipitation_sum,shortwave_radiation_sum,apparent_temperature_mean,dew_point_2m_mean&timezone=America%2FNew_York&forecast_days=16 HTTP/1.1" 200 None
-2026-04-01 22:00:44,050 - INFO - Forecast data extracted for Mississauga.
-2026-04-01 22:00:44,056 - DEBUG - Forecasted data type received: <class 'dict'>
-2026-04-01 22:00:44,056 - INFO - Processing 16 days of forecast data for Mississauga.
-2026-04-01 22:00:44,056 - INFO - Finished forecast data processing for Mississauga.
-2026-04-01 22:00:44,060 - INFO - Final forecast data created for Mississauga.
-2026-04-01 22:00:44,063 - INFO - Forecast data saved to C:\Users\jamis\Desktop\bv05-forecast\Data\Mississauga_forecast_daily_weather.csv
-2026-04-01 22:00:44,069 - INFO - Forecast data saved to C:\Users\jamis\Desktop\bv05-forecast\Data\Mississauga_forecast_daily_weather.json
-2026-04-01 22:00:45,079 - INFO - Starting weather data fetch for: Brampton
-2026-04-01 22:00:45,083 - DEBUG - Starting new HTTPS connection (1): api.open-meteo.com:443
-2026-04-01 22:00:45,678 - DEBUG - https://api.open-meteo.com:443 "GET /v1/forecast?latitude=43.6834&longitude=-79.7663&daily=temperature_2m_mean,relative_humidity_2m_mean,wind_speed_10m_mean,cloud_cover_mean,precipitation_sum,shortwave_radiation_sum,apparent_temperature_mean,dew_point_2m_mean&timezone=America%2FNew_York&forecast_days=16 HTTP/1.1" 200 None
-2026-04-01 22:00:45,678 - INFO - Forecast data extracted for Brampton.
-2026-04-01 22:00:45,678 - DEBUG - Forecasted data type received: <class 'dict'>
-2026-04-01 22:00:45,678 - INFO - Processing 16 days of forecast data for Brampton.
-2026-04-01 22:00:45,678 - INFO - Finished forecast data processing for Brampton.
-2026-04-01 22:00:45,687 - INFO - Final forecast data created for Brampton.
-2026-04-01 22:00:45,689 - INFO - Forecast data saved to C:\Users\jamis\Desktop\bv05-forecast\Data\Brampton_forecast_daily_weather.csv
-2026-04-01 22:00:45,691 - INFO - Forecast data saved to C:\Users\jamis\Desktop\bv05-forecast\Data\Brampton_forecast_daily_weather.json
-2026-04-01 22:00:46,699 - INFO - Starting weather data fetch for: Hamilton
-2026-04-01 22:00:46,703 - DEBUG - Starting new HTTPS connection (1): api.open-meteo.com:443
-2026-04-01 22:00:47,227 - DEBUG - https://api.open-meteo.com:443 "GET /v1/forecast?latitude=43.2501&longitude=-79.8496&daily=temperature_2m_mean,relative_humidity_2m_mean,wind_speed_10m_mean,cloud_cover_mean,precipitation_sum,shortwave_radiation_sum,apparent_temperature_mean,dew_point_2m_mean&timezone=America%2FNew_York&forecast_days=16 HTTP/1.1" 200 None
-2026-04-01 22:00:47,233 - INFO - Forecast data extracted for Hamilton.
-2026-04-01 22:00:47,233 - DEBUG - Forecasted data type received: <class 'dict'>
-2026-04-01 22:00:47,233 - INFO - Processing 16 days of forecast data for Hamilton.
-2026-04-01 22:00:47,233 - INFO - Finished forecast data processing for Hamilton.
-2026-04-01 22:00:47,238 - INFO - Final forecast data created for Hamilton.
-2026-04-01 22:00:47,241 - INFO - Forecast data saved to C:\Users\jamis\Desktop\bv05-forecast\Data\Hamilton_forecast_daily_weather.csv
-2026-04-01 22:00:47,243 - INFO - Forecast data saved to C:\Users\jamis\Desktop\bv05-forecast\Data\Hamilton_forecast_daily_weather.json
-2026-04-01 22:00:48,245 - INFO - Starting weather data fetch for: Toronto
-2026-04-01 22:00:48,256 - DEBUG - Starting new HTTPS connection (1): api.open-meteo.com:443
-2026-04-01 22:00:48,788 - DEBUG - https://api.open-meteo.com:443 "GET /v1/forecast?latitude=43.7064&longitude=-79.3986&daily=temperature_2m_mean,relative_humidity_2m_mean,wind_speed_10m_mean,cloud_cover_mean,precipitation_sum,shortwave_radiation_sum,apparent_temperature_mean,dew_point_2m_mean&timezone=America%2FNew_York&forecast_days=16 HTTP/1.1" 200 None
-2026-04-01 22:00:48,788 - INFO - Forecast data extracted for Toronto.
-2026-04-01 22:00:48,790 - DEBUG - Forecasted data type received: <class 'dict'>
-2026-04-01 22:00:48,790 - INFO - Processing 16 days of forecast data for Toronto.
-2026-04-01 22:00:48,790 - INFO - Finished forecast data processing for Toronto.
-2026-04-01 22:00:48,792 - INFO - Final forecast data created for Toronto.
-2026-04-01 22:00:48,801 - INFO - Forecast data saved to C:\Users\jamis\Desktop\bv05-forecast\Data\Toronto_forecast_daily_weather.csv
-2026-04-01 22:00:48,806 - INFO - Forecast data saved to C:\Users\jamis\Desktop\bv05-forecast\Data\Toronto_forecast_daily_weather.json
-2026-04-01 22:00:49,807 - INFO - Starting weather data fetch for: London
-2026-04-01 22:00:49,809 - DEBUG - Starting new HTTPS connection (1): api.open-meteo.com:443
-2026-04-01 22:00:50,326 - DEBUG - https://api.open-meteo.com:443 "GET /v1/forecast?latitude=42.9834&longitude=-81.233&daily=temperature_2m_mean,relative_humidity_2m_mean,wind_speed_10m_mean,cloud_cover_mean,precipitation_sum,shortwave_radiation_sum,apparent_temperature_mean,dew_point_2m_mean&timezone=America%2FNew_York&forecast_days=16 HTTP/1.1" 200 None
-2026-04-01 22:00:50,329 - INFO - Forecast data extracted for London.
-2026-04-01 22:00:50,329 - DEBUG - Forecasted data type received: <class 'dict'>
-2026-04-01 22:00:50,329 - INFO - Processing 16 days of forecast data for London.
-2026-04-01 22:00:50,329 - INFO - Finished forecast data processing for London.
-2026-04-01 22:00:50,334 - INFO - Final forecast data created for London.
-2026-04-01 22:00:50,335 - INFO - Forecast data saved to C:\Users\jamis\Desktop\bv05-forecast\Data\London_forecast_daily_weather.csv
-2026-04-01 22:00:50,341 - INFO - Forecast data saved to C:\Users\jamis\Desktop\bv05-forecast\Data\London_forecast_daily_weather.json
-2026-04-01 22:00:51,357 - INFO - 
+2026-04-04 03:06:37,997 - INFO - Running batch forecast script for all known locations
+2026-04-04 03:06:37,997 - INFO - Starting weather data fetch for: Ottawa
+2026-04-04 03:06:38,004 - DEBUG - Starting new HTTPS connection (1): api.open-meteo.com:443
+2026-04-04 03:06:38,628 - DEBUG - https://api.open-meteo.com:443 "GET /v1/forecast?latitude=45.4112&longitude=-75.6981&daily=temperature_2m_mean,relative_humidity_2m_mean,wind_speed_10m_mean,cloud_cover_mean,precipitation_sum,shortwave_radiation_sum,apparent_temperature_mean,dew_point_2m_mean&timezone=America%2FNew_York&forecast_days=16 HTTP/1.1" 200 None
+2026-04-04 03:06:38,628 - INFO - Forecast data extracted for Ottawa.
+2026-04-04 03:06:38,639 - DEBUG - Forecasted data type received: <class 'dict'>
+2026-04-04 03:06:38,639 - INFO - Processing 16 days of forecast data for Ottawa.
+2026-04-04 03:06:38,639 - INFO - Finished forecast data processing for Ottawa.
+2026-04-04 03:06:38,639 - INFO - Final forecast data created for Ottawa.
+2026-04-04 03:06:38,664 - INFO - Forecast data saved to C:\Users\jamis\Desktop\bv05-forecast\Data\Ottawa_forecast_daily_weather.csv
+2026-04-04 03:06:38,670 - INFO - Forecast data saved to C:\Users\jamis\Desktop\bv05-forecast\Data\Ottawa_forecast_daily_weather.json
+2026-04-04 03:06:39,680 - INFO - Starting weather data fetch for: Mississauga
+2026-04-04 03:06:39,683 - DEBUG - Starting new HTTPS connection (1): api.open-meteo.com:443
+2026-04-04 03:06:40,265 - DEBUG - https://api.open-meteo.com:443 "GET /v1/forecast?latitude=43.5789&longitude=-79.6583&daily=temperature_2m_mean,relative_humidity_2m_mean,wind_speed_10m_mean,cloud_cover_mean,precipitation_sum,shortwave_radiation_sum,apparent_temperature_mean,dew_point_2m_mean&timezone=America%2FNew_York&forecast_days=16 HTTP/1.1" 200 None
+2026-04-04 03:06:40,266 - INFO - Forecast data extracted for Mississauga.
+2026-04-04 03:06:40,266 - DEBUG - Forecasted data type received: <class 'dict'>
+2026-04-04 03:06:40,266 - INFO - Processing 16 days of forecast data for Mississauga.
+2026-04-04 03:06:40,266 - INFO - Finished forecast data processing for Mississauga.
+2026-04-04 03:06:40,266 - INFO - Final forecast data created for Mississauga.
+2026-04-04 03:06:40,276 - INFO - Forecast data saved to C:\Users\jamis\Desktop\bv05-forecast\Data\Mississauga_forecast_daily_weather.csv
+2026-04-04 03:06:40,281 - INFO - Forecast data saved to C:\Users\jamis\Desktop\bv05-forecast\Data\Mississauga_forecast_daily_weather.json
+2026-04-04 03:06:41,291 - INFO - Starting weather data fetch for: Brampton
+2026-04-04 03:06:41,291 - DEBUG - Starting new HTTPS connection (1): api.open-meteo.com:443
+2026-04-04 03:06:41,888 - DEBUG - https://api.open-meteo.com:443 "GET /v1/forecast?latitude=43.6834&longitude=-79.7663&daily=temperature_2m_mean,relative_humidity_2m_mean,wind_speed_10m_mean,cloud_cover_mean,precipitation_sum,shortwave_radiation_sum,apparent_temperature_mean,dew_point_2m_mean&timezone=America%2FNew_York&forecast_days=16 HTTP/1.1" 200 None
+2026-04-04 03:06:41,888 - INFO - Forecast data extracted for Brampton.
+2026-04-04 03:06:41,892 - DEBUG - Forecasted data type received: <class 'dict'>
+2026-04-04 03:06:41,892 - INFO - Processing 16 days of forecast data for Brampton.
+2026-04-04 03:06:41,892 - INFO - Finished forecast data processing for Brampton.
+2026-04-04 03:06:41,892 - INFO - Final forecast data created for Brampton.
+2026-04-04 03:06:41,902 - INFO - Forecast data saved to C:\Users\jamis\Desktop\bv05-forecast\Data\Brampton_forecast_daily_weather.csv
+2026-04-04 03:06:41,904 - INFO - Forecast data saved to C:\Users\jamis\Desktop\bv05-forecast\Data\Brampton_forecast_daily_weather.json
+2026-04-04 03:06:42,912 - INFO - Starting weather data fetch for: Hamilton
+2026-04-04 03:06:42,914 - DEBUG - Starting new HTTPS connection (1): api.open-meteo.com:443
+2026-04-04 03:06:43,446 - DEBUG - https://api.open-meteo.com:443 "GET /v1/forecast?latitude=43.2501&longitude=-79.8496&daily=temperature_2m_mean,relative_humidity_2m_mean,wind_speed_10m_mean,cloud_cover_mean,precipitation_sum,shortwave_radiation_sum,apparent_temperature_mean,dew_point_2m_mean&timezone=America%2FNew_York&forecast_days=16 HTTP/1.1" 200 None
+2026-04-04 03:06:43,446 - INFO - Forecast data extracted for Hamilton.
+2026-04-04 03:06:43,446 - DEBUG - Forecasted data type received: <class 'dict'>
+2026-04-04 03:06:43,446 - INFO - Processing 16 days of forecast data for Hamilton.
+2026-04-04 03:06:43,446 - INFO - Finished forecast data processing for Hamilton.
+2026-04-04 03:06:43,449 - INFO - Final forecast data created for Hamilton.
+2026-04-04 03:06:43,449 - INFO - Forecast data saved to C:\Users\jamis\Desktop\bv05-forecast\Data\Hamilton_forecast_daily_weather.csv
+2026-04-04 03:06:43,454 - INFO - Forecast data saved to C:\Users\jamis\Desktop\bv05-forecast\Data\Hamilton_forecast_daily_weather.json
+2026-04-04 03:06:44,467 - INFO - Starting weather data fetch for: Toronto
+2026-04-04 03:06:44,467 - DEBUG - Starting new HTTPS connection (1): api.open-meteo.com:443
+2026-04-04 03:06:44,980 - DEBUG - https://api.open-meteo.com:443 "GET /v1/forecast?latitude=43.7064&longitude=-79.3986&daily=temperature_2m_mean,relative_humidity_2m_mean,wind_speed_10m_mean,cloud_cover_mean,precipitation_sum,shortwave_radiation_sum,apparent_temperature_mean,dew_point_2m_mean&timezone=America%2FNew_York&forecast_days=16 HTTP/1.1" 200 None
+2026-04-04 03:06:44,980 - INFO - Forecast data extracted for Toronto.
+2026-04-04 03:06:44,982 - DEBUG - Forecasted data type received: <class 'dict'>
+2026-04-04 03:06:44,982 - INFO - Processing 16 days of forecast data for Toronto.
+2026-04-04 03:06:44,982 - INFO - Finished forecast data processing for Toronto.
+2026-04-04 03:06:44,984 - INFO - Final forecast data created for Toronto.
+2026-04-04 03:06:44,987 - INFO - Forecast data saved to C:\Users\jamis\Desktop\bv05-forecast\Data\Toronto_forecast_daily_weather.csv
+2026-04-04 03:06:44,990 - INFO - Forecast data saved to C:\Users\jamis\Desktop\bv05-forecast\Data\Toronto_forecast_daily_weather.json
+2026-04-04 03:06:45,993 - INFO - Starting weather data fetch for: London
+2026-04-04 03:06:45,995 - DEBUG - Starting new HTTPS connection (1): api.open-meteo.com:443
+2026-04-04 03:06:46,514 - DEBUG - https://api.open-meteo.com:443 "GET /v1/forecast?latitude=42.9834&longitude=-81.233&daily=temperature_2m_mean,relative_humidity_2m_mean,wind_speed_10m_mean,cloud_cover_mean,precipitation_sum,shortwave_radiation_sum,apparent_temperature_mean,dew_point_2m_mean&timezone=America%2FNew_York&forecast_days=16 HTTP/1.1" 200 None
+2026-04-04 03:06:46,514 - INFO - Forecast data extracted for London.
+2026-04-04 03:06:46,514 - DEBUG - Forecasted data type received: <class 'dict'>
+2026-04-04 03:06:46,514 - INFO - Processing 16 days of forecast data for London.
+2026-04-04 03:06:46,514 - INFO - Finished forecast data processing for London.
+2026-04-04 03:06:46,524 - INFO - Final forecast data created for London.
+2026-04-04 03:06:46,527 - INFO - Forecast data saved to C:\Users\jamis\Desktop\bv05-forecast\Data\London_forecast_daily_weather.csv
+2026-04-04 03:06:46,529 - INFO - Forecast data saved to C:\Users\jamis\Desktop\bv05-forecast\Data\London_forecast_daily_weather.json
+2026-04-04 03:06:47,539 - INFO - 
 Forecast script finished execution.
