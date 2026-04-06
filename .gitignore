@@ -13,9 +13,9 @@ __pycache__/
 personal_computer.txt
 
 # Ignore logs (you don't want to push your local run history)
-Log/
-*.log
-Log/load_forecast_log.txt
+# Log/
+# *.log
+# Log/load_forecast_log.txt
 
 # Ignore temporary files from our new UUID logic
 temp_input_*.csv
