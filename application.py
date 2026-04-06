@@ -16,7 +16,7 @@ from load_forecast_json_and_csv_upgraded import (
     LOCATIONS
 )
 
-# Import the new validation module
+# Import validation module
 from interactive_validation_module import get_validation_section
 
 # Initialize the flask app
@@ -79,7 +79,6 @@ def home():
     user_message = None
     input_errors = {}
 
-    # Fetch load forecast data
     load_data = build_load_forecast(city)
     weather_data = build_weather(city, load_data)
 
@@ -98,7 +97,6 @@ def home():
     default_dates = [(datetime.today() + timedelta(days=i)).strftime("%Y-%m-%d") for i in range(5)]
     user_submitted_data = session.get('user_data', [{"date": d, "temp": "", "wind": ""} for d in default_dates])
 
-    # Handle POST requests (user forecast)
     if request.method == "POST":
         selected_city = request.form.get("user_city", city)
         form_type = request.form.get("form_type")
@@ -205,7 +203,6 @@ def home():
             if target_filename and os.path.exists(target_filename):
                 os.remove(target_filename)
 
-    # Default values for validation section
     min_date_str = (datetime.today() - timedelta(days=365)).strftime("%Y-%m-%d")
     max_date_str = (datetime.today() + timedelta(days=365)).strftime("%Y-%m-%d")
 
@@ -224,7 +221,6 @@ def home():
         input_errors=input_errors,
         min_date=min_date_str,
         max_date=max_date_str,
-        # Validation section
         validation_html=None,
         show_validation=False
     )
@@ -248,6 +244,10 @@ def run_validation():
         latest_load = {"temperature": "N/A", "forecast_residential_load": 0, "forecast_ci_load": 0}
         next_day = {"temperature": "N/A", "forecast_residential_load": 0, "forecast_ci_load": 0}
 
+    # Fixed: Always provide 5 default entries for user_submitted_data
+    default_dates = [(datetime.today() + timedelta(days=i)).strftime("%Y-%m-%d") for i in range(5)]
+    user_submitted_data = session.get('user_data', [{"date": d, "temp": "", "wind": ""} for d in default_dates])
+
     return render_template(
         "index.html",
         selected_city=city,
@@ -260,7 +260,7 @@ def run_validation():
         show_validation=True,
         user_output=None,
         user_message=None,
-        user_submitted_data=session.get('user_data', []),
+        user_submitted_data=user_submitted_data,
         input_dates=[(datetime.today() + timedelta(days=i)).strftime("%Y-%m-%d") for i in range(5)],
         input_errors={},
         min_date=(datetime.today() - timedelta(days=365)).strftime("%Y-%m-%d"),
