@@ -244,7 +244,7 @@ def run_validation():
         latest_load = {"temperature": "N/A", "forecast_residential_load": 0, "forecast_ci_load": 0}
         next_day = {"temperature": "N/A", "forecast_residential_load": 0, "forecast_ci_load": 0}
 
-    # Fixed: Always provide 5 default entries for user_submitted_data
+    # Fixed: Always ensure user_submitted_data has 5 entries
     default_dates = [(datetime.today() + timedelta(days=i)).strftime("%Y-%m-%d") for i in range(5)]
     user_submitted_data = session.get('user_data', [{"date": d, "temp": "", "wind": ""} for d in default_dates])
 
