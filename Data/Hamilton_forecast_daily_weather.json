@@ -1,0 +1,178 @@
+[
+  {
+    "date":"2026-04-06",
+    "temperature_2m_mean (\u00b0C)":2.9,
+    "relative_humidity_2m_mean (%)":73,
+    "wind_speed_10m_mean (km\/h)":8.6,
+    "cloud_cover_mean (%)":75,
+    "precipitation_sum (mm)":1.0,
+    "shortwave_radiation_sum (MJ\/m\u00b2)":13.56,
+    "apparent_temperature_mean (\u00b0C)":-0.6,
+    "dew_point_2m_mean (\u00b0C)":-1.8
+  },
+  {
+    "date":"2026-04-07",
+    "temperature_2m_mean (\u00b0C)":-1.9,
+    "relative_humidity_2m_mean (%)":65,
+    "wind_speed_10m_mean (km\/h)":21.3,
+    "cloud_cover_mean (%)":88,
+    "precipitation_sum (mm)":0.8,
+    "shortwave_radiation_sum (MJ\/m\u00b2)":14.6,
+    "apparent_temperature_mean (\u00b0C)":-8.0,
+    "dew_point_2m_mean (\u00b0C)":-7.7
+  },
+  {
+    "date":"2026-04-08",
+    "temperature_2m_mean (\u00b0C)":0.9,
+    "relative_humidity_2m_mean (%)":56,
+    "wind_speed_10m_mean (km\/h)":9.7,
+    "cloud_cover_mean (%)":46,
+    "precipitation_sum (mm)":0.0,
+    "shortwave_radiation_sum (MJ\/m\u00b2)":23.94,
+    "apparent_temperature_mean (\u00b0C)":-3.2,
+    "dew_point_2m_mean (\u00b0C)":-7.3
+  },
+  {
+    "date":"2026-04-09",
+    "temperature_2m_mean (\u00b0C)":10.4,
+    "relative_humidity_2m_mean (%)":60,
+    "wind_speed_10m_mean (km\/h)":23.1,
+    "cloud_cover_mean (%)":89,
+    "precipitation_sum (mm)":0.1,
+    "shortwave_radiation_sum (MJ\/m\u00b2)":19.28,
+    "apparent_temperature_mean (\u00b0C)":5.6,
+    "dew_point_2m_mean (\u00b0C)":2.8
+  },
+  {
+    "date":"2026-04-10",
+    "temperature_2m_mean (\u00b0C)":11.6,
+    "relative_humidity_2m_mean (%)":71,
+    "wind_speed_10m_mean (km\/h)":19.3,
+    "cloud_cover_mean (%)":96,
+    "precipitation_sum (mm)":3.5,
+    "shortwave_radiation_sum (MJ\/m\u00b2)":16.22,
+    "apparent_temperature_mean (\u00b0C)":8.0,
+    "dew_point_2m_mean (\u00b0C)":6.4
+  },
+  {
+    "date":"2026-04-11",
+    "temperature_2m_mean (\u00b0C)":6.6,
+    "relative_humidity_2m_mean (%)":62,
+    "wind_speed_10m_mean (km\/h)":8.0,
+    "cloud_cover_mean (%)":19,
+    "precipitation_sum (mm)":0.0,
+    "shortwave_radiation_sum (MJ\/m\u00b2)":24.28,
+    "apparent_temperature_mean (\u00b0C)":3.6,
+    "dew_point_2m_mean (\u00b0C)":-0.5
+  },
+  {
+    "date":"2026-04-12",
+    "temperature_2m_mean (\u00b0C)":11.1,
+    "relative_humidity_2m_mean (%)":66,
+    "wind_speed_10m_mean (km\/h)":15.7,
+    "cloud_cover_mean (%)":95,
+    "precipitation_sum (mm)":0.0,
+    "shortwave_radiation_sum (MJ\/m\u00b2)":9.67,
+    "apparent_temperature_mean (\u00b0C)":7.8,
+    "dew_point_2m_mean (\u00b0C)":5.0
+  },
+  {
+    "date":"2026-04-13",
+    "temperature_2m_mean (\u00b0C)":16.5,
+    "relative_humidity_2m_mean (%)":80,
+    "wind_speed_10m_mean (km\/h)":28.8,
+    "cloud_cover_mean (%)":94,
+    "precipitation_sum (mm)":4.8,
+    "shortwave_radiation_sum (MJ\/m\u00b2)":13.47,
+    "apparent_temperature_mean (\u00b0C)":13.4,
+    "dew_point_2m_mean (\u00b0C)":13.0
+  },
+  {
+    "date":"2026-04-14",
+    "temperature_2m_mean (\u00b0C)":12.0,
+    "relative_humidity_2m_mean (%)":83,
+    "wind_speed_10m_mean (km\/h)":13.6,
+    "cloud_cover_mean (%)":88,
+    "precipitation_sum (mm)":0.3,
+    "shortwave_radiation_sum (MJ\/m\u00b2)":15.99,
+    "apparent_temperature_mean (\u00b0C)":9.9,
+    "dew_point_2m_mean (\u00b0C)":9.2
+  },
+  {
+    "date":"2026-04-15",
+    "temperature_2m_mean (\u00b0C)":5.5,
+    "relative_humidity_2m_mean (%)":96,
+    "wind_speed_10m_mean (km\/h)":21.6,
+    "cloud_cover_mean (%)":100,
+    "precipitation_sum (mm)":10.8,
+    "shortwave_radiation_sum (MJ\/m\u00b2)":1.63,
+    "apparent_temperature_mean (\u00b0C)":1.1,
+    "dew_point_2m_mean (\u00b0C)":4.9
+  },
+  {
+    "date":"2026-04-16",
+    "temperature_2m_mean (\u00b0C)":5.8,
+    "relative_humidity_2m_mean (%)":84,
+    "wind_speed_10m_mean (km\/h)":8.2,
+    "cloud_cover_mean (%)":100,
+    "precipitation_sum (mm)":0.9,
+    "shortwave_radiation_sum (MJ\/m\u00b2)":6.09,
+    "apparent_temperature_mean (\u00b0C)":3.0,
+    "dew_point_2m_mean (\u00b0C)":3.3
+  },
+  {
+    "date":"2026-04-17",
+    "temperature_2m_mean (\u00b0C)":6.2,
+    "relative_humidity_2m_mean (%)":83,
+    "wind_speed_10m_mean (km\/h)":9.6,
+    "cloud_cover_mean (%)":100,
+    "precipitation_sum (mm)":1.5,
+    "shortwave_radiation_sum (MJ\/m\u00b2)":13.71,
+    "apparent_temperature_mean (\u00b0C)":3.3,
+    "dew_point_2m_mean (\u00b0C)":3.4
+  },
+  {
+    "date":"2026-04-18",
+    "temperature_2m_mean (\u00b0C)":12.7,
+    "relative_humidity_2m_mean (%)":91,
+    "wind_speed_10m_mean (km\/h)":16.6,
+    "cloud_cover_mean (%)":100,
+    "precipitation_sum (mm)":4.2,
+    "shortwave_radiation_sum (MJ\/m\u00b2)":5.85,
+    "apparent_temperature_mean (\u00b0C)":10.7,
+    "dew_point_2m_mean (\u00b0C)":11.3
+  },
+  {
+    "date":"2026-04-19",
+    "temperature_2m_mean (\u00b0C)":9.3,
+    "relative_humidity_2m_mean (%)":75,
+    "wind_speed_10m_mean (km\/h)":13.1,
+    "cloud_cover_mean (%)":80,
+    "precipitation_sum (mm)":0.0,
+    "shortwave_radiation_sum (MJ\/m\u00b2)":9.79,
+    "apparent_temperature_mean (\u00b0C)":6.2,
+    "dew_point_2m_mean (\u00b0C)":4.9
+  },
+  {
+    "date":"2026-04-20",
+    "temperature_2m_mean (\u00b0C)":6.3,
+    "relative_humidity_2m_mean (%)":54,
+    "wind_speed_10m_mean (km\/h)":7.9,
+    "cloud_cover_mean (%)":57,
+    "precipitation_sum (mm)":0.0,
+    "shortwave_radiation_sum (MJ\/m\u00b2)":23.98,
+    "apparent_temperature_mean (\u00b0C)":3.0,
+    "dew_point_2m_mean (\u00b0C)":-2.5
+  },
+  {
+    "date":"2026-04-21",
+    "temperature_2m_mean (\u00b0C)":6.5,
+    "relative_humidity_2m_mean (%)":70,
+    "wind_speed_10m_mean (km\/h)":12.1,
+    "cloud_cover_mean (%)":93,
+    "precipitation_sum (mm)":0.0,
+    "shortwave_radiation_sum (MJ\/m\u00b2)":13.4,
+    "apparent_temperature_mean (\u00b0C)":3.0,
+    "dew_point_2m_mean (\u00b0C)":1.3
+  }
+]

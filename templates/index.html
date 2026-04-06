@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>BV05 Forecast Dashboard</title>
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+   <style>
+      * { box-sizing: border-box; }
+
+      html {
+         scroll-behavior: smooth;
+      }
+
+      body {
+         margin: 0;
+         font-family: 'Inter', sans-serif;
+         background: linear-gradient(180deg, #0e1a33 0%, #16274a 100%);
+         color: #eef4ff;
+         min-height: 100vh;
+         padding: 28px;
+      }
+
+      /* --- NEW LAYOUT CSS --- */
+      .dashboard-layout {
+         display: flex;
+         max-width: 1400px; /* Kept constrained for proper chart UI */
+         margin: 0 auto;
+         gap: 30px;
+         align-items: flex-start;
+      }
+
+      .sidebar {
+         width: 250px;
+         flex-shrink: 0;
+         display: flex;
+         flex-direction: column;
+         gap: 15px;
+         position: sticky;
+         top: 28px;
+      }
+
+      .sidebar-btn {
+         background: rgba(255, 255, 255, 0.08);
+         border: 1px solid rgba(255, 255, 255, 0.12);
+         color: #eef4ff;
+         padding: 16px 20px;
+         font-size: 1rem;
+         font-weight: 600;
+         text-align: left;
+         border-radius: 12px;
+         cursor: pointer;
+         transition: all 0.2s ease;
+         font-family: inherit;
+      }
+
+      .sidebar-btn:hover {
+         background: rgba(255, 255, 255, 0.15);
+      }
+
+      .sidebar-btn.active {
+         background: #60a5fa;
+         color: #0e1a33;
+         border-color: #60a5fa;
+         box-shadow: 0 4px 15px rgba(96, 165, 250, 0.4);
+      }
+
+      .main-content {
+         flex-grow: 1;
+         min-width: 0;
+      }
+
+      .tab-section {
+         display: none;
+         animation: fadeIn 0.3s ease;
+      }
+
+      .tab-section.active {
+         display: block;
+      }
+
+      @keyframes fadeIn {
+         from { opacity: 0; transform: translateY(5px); }
+         to { opacity: 1; transform: translateY(0); }
+      }
+      /* ---------------------- */
+
+      .card {
+         background: rgba(255, 255, 255, 0.08);
+         border: 1px solid rgba(255, 255, 255, 0.12);
+         border-radius: 30px;
+         padding: 30px 32px;
+         margin-bottom: 22px;
+         box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+         backdrop-filter: blur(10px);
+         scroll-margin-top: 24px;
+      }
+
+      .hero {
+         text-align: center;
+         padding-top: 40px;
+         padding-bottom: 28px;
+      }
+
+      h1 {
+         margin: 0 0 10px;
+         font-size: 3rem;
+         font-weight: 800;
+         color: #9fd0ff;
+         letter-spacing: -0.03em;
+      }
+
+      .hero p {
+         max-width: 820px;
+         margin: 0 auto 28px;
+         font-size: 1.15rem;
+         line-height: 1.6;
+         color: #edf4ff;
+      }
+
+      h2 {
+         margin: 0 0 18px;
+         text-align: center;
+         font-size: 2rem;
+         font-weight: 800;
+         color: #bde4ff;
+      }
+
+      h3 {
+         margin: 0 0 10px;
+         font-size: 1.2rem;
+         color: #dbeafe;
+      }
+
+      .location-form {
+         display: flex;
+         justify-content: center;
+         margin-bottom: 18px;
+      }
+
+      select, input {
+         width: 100%;
+         padding: 14px 16px;
+         border-radius: 16px;
+         border: none;
+         font-size: 1rem;
+         font-family: inherit;
+         background: #f8fafc;
+         color: #1e293b;
+      }
+
+      .location-form select {
+         max-width: 430px;
+      }
+
+      .pills {
+         display: flex;
+         justify-content: center;
+         gap: 12px;
+         flex-wrap: wrap;
+         margin-top: 10px;
+      }
+
+      .pill {
+         padding: 10px 16px;
+         border-radius: 999px;
+         background: rgba(255, 255, 255, 0.1);
+         color: #f1f5f9;
+         font-weight: 600;
+         font-size: 0.95rem;
+      }
+
+      .summary-grid {
+         display: grid;
+         grid-template-columns: repeat(3, 1fr);
+         gap: 18px;
+         margin-top: 16px;
+      }
+
+      .mini-box {
+         background: rgba(255, 255, 255, 0.08);
+         border-radius: 22px;
+         padding: 22px 18px;
+         text-align: center;
+      }
+
+      .mini-label {
+         font-size: 1rem;
+         color: #dbeafe;
+         margin-bottom: 8px;
+         font-weight: 600;
+      }
+
+      .mini-value {
+         font-size: 1.9rem;
+         font-weight: 800;
+         color: #ffffff;
+      }
+
+      .mini-caption {
+         margin-top: 6px;
+         color: #cbd5e1;
+         font-size: 0.95rem;
+      }
+
+      table {
+         width: 100%;
+         border-collapse: collapse;
+         overflow: hidden;
+         margin-top: 18px;
+         border-radius: 18px;
+      }
+
+      thead {
+         background: rgba(255, 255, 255, 0.08);
+      }
+
+      th, td {
+         padding: 14px 12px;
+         text-align: center;
+         font-size: 0.98rem;
+      }
+
+      th {
+         color: #cfe8ff;
+         font-weight: 700;
+      }
+
+      tbody tr:nth-child(even) {
+         background: rgba(255, 255, 255, 0.04);
+      }
+
+      tbody tr:nth-child(odd) {
+         background: rgba(255, 255, 255, 0.02);
+      }
+
+      .section-text {
+         text-align: center;
+         color: #e2e8f0;
+         max-width: 780px;
+         margin: 0 auto 12px;
+         line-height: 1.6;
+      }
+
+      .user-panel {
+         display: flex;
+         flex-direction: column;
+         gap: 22px;
+      }
+
+      .form-box, .output-box {
+         background: rgba(255, 255, 255, 0.06);
+         border-radius: 24px;
+         padding: 22px;
+         width: 100%;
+      }
+
+      .btn {
+         display: inline-block;
+         border: none;
+         border-radius: 14px;
+         padding: 13px 18px;
+         font-size: 1rem;
+         font-weight: 700;
+         cursor: pointer;
+         background: linear-gradient(135deg, #60a5fa, #818cf8);
+         color: white;
+         font-family: inherit;
+         box-shadow: 0 10px 24px rgba(96, 165, 250, 0.25);
+      }
+
+      .message {
+         margin-top: 14px;
+         padding: 12px 14px;
+         border-radius: 14px;
+         font-weight: 600;
+         text-align: center;
+         border-left: 4px solid #22c55e;
+         background: rgba(34, 197, 94, 0.15);
+         color: #dcfce7;
+      }
+
+      .message-error {
+         border-left: 4px solid #f87171;
+         background: rgba(248, 113, 113, 0.16);
+         color: #ffe2e2;
+      }
+
+      .section-message {
+         margin-top: 0;
+         margin-bottom: 20px;
+      }
+
+      .footer-note {
+         text-align: center;
+         margin-top: 10px;
+         color: #cbd5e1;
+         font-size: 0.92rem;
+      }
+
+      .results-divider {
+         margin: 30px 0 0;
+         border: none;
+         border-top: 1px solid rgba(255, 255, 255, 0.15);
+      }
+
+      /* Alert styles added to handle the python script outputs gracefully */
+      .alert {
+         padding: 16px;
+         border-radius: 14px;
+         margin-bottom: 20px;
+         font-weight: 500;
+         text-align: center;
+      }
+      .alert-warning {
+         background: rgba(245, 158, 11, 0.15);
+         border-left: 4px solid #f59e0b;
+         color: #fcd34d;
+      }
+      .alert-danger {
+         background: rgba(239, 68, 68, 0.15);
+         border-left: 4px solid #ef4444;
+         color: #fca5a5;
+      }
+
+      .loading-overlay {
+         position: fixed;
+         inset: 0;
+         background: rgba(7, 15, 30, 0.82);
+         display: none;
+         align-items: center;
+         justify-content: center;
+         z-index: 9999;
+         backdrop-filter: blur(6px);
+      }
+
+      .loading-box {
+         background: rgba(255, 255, 255, 0.08);
+         border: 1px solid rgba(255, 255, 255, 0.12);
+         border-radius: 24px;
+         padding: 28px 34px;
+         text-align: center;
+         min-width: 280px;
+         box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3);
+      }
+
+      .loading-spinner {
+         width: 54px;
+         height: 54px;
+         margin: 0 auto 18px;
+         border: 5px solid rgba(255, 255, 255, 0.18);
+         border-top: 5px solid #9fd0ff;
+         border-radius: 50%;
+         animation: spin 0.9s linear infinite;
+      }
+
+      .loading-title {
+         font-size: 1.2rem;
+         font-weight: 700;
+         color: #eef4ff;
+         margin-bottom: 8px;
+      }
+
+      .loading-text {
+         font-size: 0.98rem;
+         color: #cbd5e1;
+         line-height: 1.5;
+      }
+
+      .input-error {
+         border: 2px solid #ef4444 !important;
+         background: rgba(239, 68, 68, 0.15) !important;
+         color: #fca5a5 !important;
+      }
+
+      @keyframes spin {
+         0% { transform: rotate(0deg); }
+         100% { transform: rotate(360deg); }
+      }
+
+      @media (max-width: 900px) {
+         .dashboard-layout { flex-direction: column; }
+         .sidebar { width: 100%; position: static; flex-direction: row; flex-wrap: wrap; }
+         .sidebar-btn { flex: 1; text-align: center; }
+         .summary-grid { grid-template-columns: 1fr; }
+         h1 { font-size: 2.3rem; }
+      }
+   </style>
+</head>
+<body>
+   {% set forecast_has_error = forecast_message and ('error' in forecast_message|lower or 'failed' in forecast_message|lower) %}
+   {% set upload_has_error = user_message and ('error' in user_message|lower or 'failed' in user_message|lower) %}
+   {% set manual_has_error = input_errors and input_errors|length > 0 and not user_output %}
+   
+   {% set val_str = validation_html | string %}
+   {% set validation_has_error = validation_html and ('<div class="alert' in val_str[:100]) %}
+
+   <div id="loadingOverlay" class="loading-overlay">
+      <div class="loading-box">
+         <div class="loading-spinner"></div>
+         <div class="loading-title">Processing Request</div>
+         <div class="loading-text">Please wait while the dashboard generates your forecast or validation results.</div>
+      </div>
+   </div>
+
+   <div class="dashboard-layout">
+      <div class="sidebar">
+         <button class="sidebar-btn active" id="btn-tab-16-day" onclick="switchTab('tab-16-day', this)">16-Day forecast</button>
+         <button class="sidebar-btn" id="btn-tab-user-input" onclick="switchTab('tab-user-input', this)">User Input Forecast</button>
+         <button class="sidebar-btn" id="btn-tab-validation" onclick="switchTab('tab-validation', this)">Data Accuracy/Validation</button>
+      </div>
+
+      <div class="main-content">
+
+         <div id="tab-16-day" class="tab-section active">
+            <div class="card">
+               {% if forecast_message %}
+               <div class="message section-message {% if forecast_has_error %}message-error{% endif %}">
+                  {{ forecast_message }}
+               </div>
+               {% endif %}
+
+               <div class="hero" style="padding-top: 10px; padding-bottom: 10px;">
+                  <h1>Forecast Dashboard</h1>
+                  <p>
+                     A cloud-hosted regression-based platform for forecasting weather, residential load,
+                     and commercial &amp; industrial electricity demand. The dashboard integrates forecast outputs
+                     into one centralized web interface to support analysis, planning, and decision-making.
+                  </p>
+                  <h2>Forecast Location</h2>
+                  <form method="GET" action="{{ url_for('home') }}" class="location-form">
+                     <select name="city" onchange="showLoading('Loading forecast data for the selected city...'); this.form.submit()">
+                        {% for city in cities %}
+                        <option value="{{ city }}" {% if city == selected_city %}selected{% endif %}>{{ city }}</option>
+                        {% endfor %}
+                     </select>
+                  </form>
+                  <div class="pills">
+                     <div class="pill">16-day forecast horizon</div>
+                     <div class="pill">Weather-driven load model</div>
+                     <div class="pill">{{ selected_city }} selected</div>
+                  </div>
+               </div>
+
+               <hr class="results-divider" style="margin-top: 24px;">
+
+               <h2>Next Forecast Day</h2>
+               <p class="section-text">
+                  The following day reflects the next available model output based on projected weather conditions
+                  and the regression-based demand relationship for {{ selected_city }}.
+               </p>
+               <div class="summary-grid">
+                  <div class="mini-box">
+                     <div class="mini-label">Date</div>
+                     <div class="mini-value">{{ next_day.date }}</div>
+                     <div class="mini-caption">Next forecasted day</div>
+                  </div>
+                  <div class="mini-box">
+                     <div class="mini-label">Residential Load</div>
+                     <div class="mini-value">{{ "%.2f"|format(next_day.forecast_residential_load) }}Wh</div>
+                     <div class="mini-caption">Projected residential demand</div>
+                  </div>
+                  <div class="mini-box">
+                     <div class="mini-label">C&amp;I Load</div>
+                     <div class="mini-value">{{ "%.2f"|format(next_day.forecast_ci_load) }}Wh</div>
+                     <div class="mini-caption">Projected commercial &amp; industrial demand</div>
+                  </div>
+               </div>
+
+               <hr class="results-divider" style="margin-top: 30px;">
+
+               <h2>16-Day Load Forecast</h2>
+               <p class="section-text">
+                  Forecast values below show the projected daily Residential and Commercial &amp; Industrial load
+                  for {{ selected_city }} over a 16-day horizon, based on weather-driven regression output.
+               </p>
+               <table>
+                  <thead>
+                     <tr>
+                        <th>Date</th>
+                        <th>Temperature (°C)</th>
+                        <th>Wind Speed (km/h)</th>
+                        <th>Residential Load (Wh)</th>
+                        <th>C&amp;I Load (Wh)</th>
+                     </tr>
+                  </thead>
+                  <tbody>
+                     {% for row in load_data %}
+                     <tr>
+                        <td>{{ row.date }}</td>
+                        <td>{{ row.temperature }}</td>
+                        <td>{{ row.wind_speed }}</td>
+                        <td>{{ "%.2f"|format(row.forecast_residential_load) }}</td>
+                        <td>{{ "%.2f"|format(row.forecast_ci_load) }}</td>
+                     </tr>
+                     {% endfor %}
+                  </tbody>
+               </table>
+               <div class="footer-note">
+                  Displayed forecast horizon: 16 daily observations for {{ selected_city }}
+               </div>
+            </div>
+         </div>
+
+         <div id="tab-user-input" class="tab-section">
+            <div class="card" id="user-forecast">
+               {% if user_output %}
+               <div class="message section-message">
+                  Success! Forecast generated for {{ selected_city }}.
+               </div>
+               {% elif manual_has_error %}
+               <div class="message section-message message-error">
+                  Please correct the highlighted input fields and try again.
+               </div>
+               {% endif %}
+
+               <h2>User Input Forecast</h2>
+               <p class="section-text">
+                  Users can provide custom forecasting inputs through the interface to generate forecast outputs for a selected city.
+               </p>
+               <p class="section-text">
+                  Enter your custom weather parameters below to generate a specific 5-day load projection.
+               </p>
+               <div class="user-panel">
+                  <div class="form-box">
+                     <form method="POST" action="{{ url_for('home') }}#user-forecast" class="loading-form">
+                        <input type="hidden" name="form_type" value="manual_input">
+                        <div class="form-group" style="margin-bottom: 20px;">
+                           <label>Select City</label>
+                           <select name="user_city" style="max-width: 300px;">
+                              {% for city in cities %}
+                              <option value="{{ city }}" {% if city == selected_city %}selected{% endif %}>{{ city }}</option>
+                              {% endfor %}
+                           </select>
+                        </div>
+                        <table class="input-table">
+                           <thead>
+                              <tr>
+                                 <th>Forecast Day</th>
+                                 <th>Date</th>
+                                 <th>Temperature (°C)</th>
+                                 <th>Wind Speed (km/h)</th>
+                              </tr>
+                           </thead>
+                           <tbody>
+                              {% for i in range(5) %}
+                              <tr>
+                                 <td style="color: #9fd0ff; font-weight: 600;">Day {{ i + 1 }}</td>
+                                 <td>
+                                    <input type="date" name="date_{{ i }}"
+                                       value="{{ user_submitted_data[i].date }}"
+                                       min="{{ min_date }}" max="{{ max_date }}"
+                                       oninvalid="this.setCustomValidity('Date must be within 1 year of today')"
+                                       oninput="this.setCustomValidity('')"
+                                       class="clean-input {% if input_errors and 'date_'~i in input_errors %}input-error{% endif %}" required>
+                                 </td>
+                                 <td>
+                                    <input type="number" name="temp_{{ i }}" step="0.1"
+                                       value="{{ user_submitted_data[i].temp }}"
+                                       min="-25" max="35"
+                                       oninvalid="this.setCustomValidity('Temperature must be between -25°C and 35°C')"
+                                       oninput="this.setCustomValidity('')"
+                                       class="clean-input {% if input_errors and 'temp_'~i in input_errors %}input-error{% endif %}" required>
+                                 </td>
+                                 <td>
+                                    <input type="number" name="wind_{{ i }}" step="0.1"
+                                       value="{{ user_submitted_data[i].wind }}"
+                                       min="0" max="35"
+                                       oninvalid="this.setCustomValidity('Wind speed must be between 0 and 35 km/h')"
+                                       oninput="this.setCustomValidity('')"
+                                       class="clean-input {% if input_errors and 'wind_'~i in input_errors %}input-error{% endif %}" required>
+                                 </td>
+                              </tr>
+                              {% endfor %}
+                           </tbody>
+                        </table>
+                        <div class="btn-row" style="margin-top: 20px; justify-content: center; text-align:center;">
+                           <button type="submit" class="btn">Generate Custom Forecast</button>
+                        </div>
+                     </form>
+
+                     {% if user_output %}
+                     <hr class="results-divider">
+                     <div class="output-box" style="margin-top: 30px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                           <h3 style="margin: 0;">Custom Forecast Results</h3>
+                           <a href="{{ url_for('download_file', filename=selected_city + '_user_forecast.xlsx') }}"
+                              class="btn" style="text-decoration: none; padding: 10px 16px; font-size: 0.9rem; background: #10b981;">
+                              ↓ Download Excel
+                           </a>
+                        </div>
+                        <table>
+                           <thead>
+                              <tr>
+                                 <th>Date</th>
+                                 <th>Temperature (°C)</th>
+                                 <th>Wind Speed (km/h)</th>
+                                 <th>Residential Load (Wh)</th>
+                                 <th>C&amp;I Load (Wh)</th>
+                              </tr>
+                           </thead>
+                           <tbody>
+                              {% for row in user_output %}
+                              <tr>
+                                 <td>{{ row.date }}</td>
+                                 <td>{{ row.temperature }}</td>
+                                 <td>{{ row.wind_speed }}</td>
+                                 <td>{{ "%.2f"|format(row.forecast_residential_load) }}</td>
+                                 <td>{{ "%.2f"|format(row.forecast_ci_load) }}</td>
+                              </tr>
+                              {% endfor %}
+                           </tbody>
+                        </table>
+                     </div>
+                     {% endif %}
+                  </div>
+               </div>
+            </div>
+
+            <div class="card" id="file-upload-section">
+               {% if user_message %}
+               <div class="message section-message {% if upload_has_error %}message-error{% endif %}">
+                  {{ user_message }}
+               </div>
+               {% endif %}
+
+               <h2>Bulk File Upload</h2>
+               <p class="section-text">
+                  Have a large dataset? Upload your own CSV or Excel file containing weather projections.
+                  <br>Ensure you follow the below steps for successful forecasting:
+                  <br>1. Download the input template
+                  <br>2. Fill out the cells starting from the 2nd row
+                  <br>3. Upload back the same template file with the filled data
+                  <br>Note: Read the second sheet of the input template file for the input data limitations.
+               </p>
+               <div style="text-align: center; margin-bottom: 25px;">
+                  <a href="{{ url_for('download_template') }}" class="btn" style="text-decoration: none; padding: 10px 16px; font-size: 0.95rem; background: #10b981;">
+                     ↓ Download Input Template
+                  </a>
+               </div>
+               <div class="user-panel">
+                  <div class="form-box">
+                     <form method="POST" enctype="multipart/form-data" class="loading-form" action="{{ url_for('home') }}#file-upload-section" style="display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap; justify-content: center;">
+                        <input type="hidden" name="form_type" value="file_upload">
+                        <div class="form-group" style="margin-bottom: 0;">
+                           <label style="display: block; margin-bottom: 8px;">Select City</label>
+                           <select name="user_city" style="width: 200px;">
+                              {% for city in cities %}
+                              <option value="{{ city }}" {% if city == selected_city %}selected{% endif %}>{{ city }}</option>
+                              {% endfor %}
+                           </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                           <label style="display: block; margin-bottom: 8px;">Upload File (.csv, .xlsx)</label>
+                           <input type="file" name="upload_file" accept=".csv, .xlsx, .xls" style="background: #f8fafc; padding: 12px; border-radius: 12px; width: 100%;" required>
+                        </div>
+                        <button type="submit" class="btn" style="height: 46px;">Process File</button>
+                     </form>
+                  </div>
+               </div>
+            </div>
+         </div>
+
+         <div id="tab-validation" class="tab-section">
+            
+            <div class="card" id="validation-section">
+               {% if show_validation and not validation_has_error %}
+               <div class="message section-message">
+                  Validation processing complete for {{ selected_city }}.
+               </div>
+               {% elif show_validation and validation_has_error %}
+               <div class="message section-message message-error">
+                  Validation could not be completed for {{ selected_city }}. Please review the error details below.
+               </div>
+               {% endif %}
+
+               <h2>Interactive Model Validation</h2>
+               <p class="section-text">
+                  Evaluate model performance by comparing actual vs predicted residential and C&amp;I load over a selected date range.
+               </p>
+               <form method="POST" action="{{ url_for('run_validation') }}#validation-section" class="loading-form" style="max-width: 820px; margin: 0 auto;">
+                  <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; align-items: end;">
+                     <div style="min-width: 200px;">
+                        <label style="display:block; margin-bottom: 6px; color:#cbd5e1;">City</label>
+                        <select name="validation_city" style="width:100%; padding:12px; border-radius:12px;">
+                           {% for c in cities %}
+                           <option value="{{ c }}" {% if c == request.form.get('validation_city', selected_city) %}selected{% endif %}>{{ c }}</option>
+                           {% endfor %}
+                        </select>
+                     </div>
+                     <div style="min-width: 180px;">
+                        <label style="display:block; margin-bottom: 6px; color:#cbd5e1;">Start Date</label>
+                        <input type="date" name="validation_start_date" 
+                               value="{{ request.form.get('validation_start_date', '') }}"
+                               min="2023-01-01" max="2025-12-31"
+                               style="width:100%; padding:12px; border-radius:12px;" required>
+                     </div>
+                     <div style="min-width: 180px;">
+                        <label style="display:block; margin-bottom: 6px; color:#cbd5e1;">End Date</label>
+                        <input type="date" name="validation_end_date" 
+                               value="{{ request.form.get('validation_end_date', '') }}"
+                               min="2023-01-01" max="2025-12-31"
+                               style="width:100%; padding:12px; border-radius:12px;" required>
+                     </div>
+                  </div>
+                  <div style="text-align: center; margin-top: 25px;">
+                     <button type="submit" class="btn" style="padding: 14px 32px; font-size: 1.05rem;">
+                        Run Validation &amp; Show Plots
+                     </button>
+                  </div>
+               </form>
+            </div>
+            {% if show_validation and validation_html %}
+               {% if validation_has_error %}
+                  <div class="card" style="margin-top: 20px;">
+                     {{ validation_html | safe }}
+                  </div>
+               {% else %}
+                  <div style="margin-top: 20px;">
+                     {{ validation_html | safe }}
+                  </div>
+               {% endif %}
+            {% endif %}
+
+         </div>
+
+      </div>
+   </div>
+
+<script>
+   function showLoading(message = "Please wait while the dashboard generates your forecast or validation results.") {
+      const overlay = document.getElementById("loadingOverlay");
+      const text = overlay.querySelector(".loading-text");
+      text.textContent = message;
+      overlay.style.display = "flex";
+   }
+
+   function switchTab(targetTabId, clickedBtn) {
+      document.querySelectorAll('.tab-section').forEach(tab => {
+         tab.classList.remove('active');
+      });
+      document.querySelectorAll('.sidebar-btn').forEach(btn => {
+         btn.classList.remove('active');
+      });
+
+      document.getElementById(targetTabId).classList.add('active');
+      if(clickedBtn) {
+         clickedBtn.classList.add('active');
+      } else {
+         const btnId = "btn-" + targetTabId;
+         const btn = document.getElementById(btnId);
+         if(btn) btn.classList.add('active');
+      }
+   }
+
+   function scrollToSection(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      setTimeout(() => {
+         el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 200);
+   }
+
+   document.addEventListener("DOMContentLoaded", function () {
+      const forms = document.querySelectorAll(".loading-form");
+
+      forms.forEach(form => {
+         form.addEventListener("submit", function () {
+            const formTypeInput = form.querySelector('input[name="form_type"]');
+            const action = form.getAttribute("action") || "";
+
+            if (action.includes("run_validation")) {
+               sessionStorage.setItem("targetTab", "tab-validation");
+               sessionStorage.setItem("scrollTarget", "validation-section");
+               showLoading("Running model validation and generating comparison plots...");
+            } else if (formTypeInput && formTypeInput.value === "file_upload") {
+               sessionStorage.setItem("targetTab", "tab-user-input");
+               sessionStorage.setItem("scrollTarget", "file-upload-section");
+               showLoading("Uploading file and generating forecast results...");
+            } else if (formTypeInput && formTypeInput.value === "manual_input") {
+               sessionStorage.setItem("targetTab", "tab-user-input");
+               sessionStorage.setItem("scrollTarget", "user-forecast");
+               showLoading("Generating your custom forecast...");
+            } else {
+               sessionStorage.setItem("targetTab", "tab-16-day");
+               showLoading("Loading updated dashboard results...");
+            }
+         });
+      });
+
+      {% if show_validation %}
+         switchTab("tab-validation");
+         scrollToSection("validation-section");
+         sessionStorage.removeItem("targetTab");
+         sessionStorage.removeItem("scrollTarget");
+      {% elif user_output or manual_has_error %}
+         switchTab("tab-user-input");
+         scrollToSection("user-forecast");
+         sessionStorage.removeItem("targetTab");
+         sessionStorage.removeItem("scrollTarget");
+      {% elif user_message %}
+         switchTab("tab-user-input");
+         scrollToSection("file-upload-section");
+         sessionStorage.removeItem("targetTab");
+         sessionStorage.removeItem("scrollTarget");
+      {% else %}
+         const savedTab = sessionStorage.getItem("targetTab");
+         const savedScroll = sessionStorage.getItem("scrollTarget");
+         
+         if (savedTab) {
+            switchTab(savedTab);
+            sessionStorage.removeItem("targetTab");
+         }
+         if (savedScroll) {
+            scrollToSection(savedScroll);
+            sessionStorage.removeItem("scrollTarget");
+         }
+      {% endif %}
+   });
+</script>
+</body>
+</html>

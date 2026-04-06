@@ -1,0 +1,32 @@
+# Ignore the virtual environment
+venv/
+env/
+.env
+
+# Python artifacts
+__pycache__/
+*.pyo
+*.pyd
+
+
+# Ignore local junk
+personal_computer.txt
+
+# Ignore logs (you don't want to push your local run history)
+Log/
+*.log
+Log/load_forecast_log.txt
+
+# Ignore temporary files from our new UUID logic
+temp_input_*.csv
+
+# Ignore compiled python files
+__pycache__/
+*.pyc
+Forecasted Output/
+
+# Ignore dynamically generated user files in the root directory
+*.xlsx
+*.csv
+*.xlsx
+*.xls
