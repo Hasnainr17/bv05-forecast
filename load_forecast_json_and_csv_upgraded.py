@@ -77,7 +77,11 @@ logger.setLevel(logging.DEBUG)
 if logger.hasHandlers():
     logger.handlers.clear()
 
-file_handler = logging.FileHandler(str(BASE_DIR / "Log" / DEFAULT_LOG_FILE), mode="w")
+# JS: Added log
+log_dir = BASE_DIR / "Log"
+log_dir.mkdir(parents=True, exist_ok=True)
+
+file_handler = logging.FileHandler(str(log_dir / DEFAULT_LOG_FILE), mode="w")
 file_handler.setLevel(logging.DEBUG)
 file_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
 logger.addHandler(file_handler)
