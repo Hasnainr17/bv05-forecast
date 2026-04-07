@@ -66,22 +66,31 @@ def fetch_forecast_weather(lat, lon, city_name):
         f"&timezone=America%2FNew_York&forecast_days=16"
     )
 
+    max_retries = 3
+    retry_delay = 5  # Start with a 5-second wait
+
     # Extracting the forecasted data
-    try:
-        response = requests.get(url, timeout=30) 
-        response.raise_for_status()
-        logging.info(f"Forecast data extracted for {city_name}.")
-        return response.json()
-    except requests.exceptions.RequestException as e:
-        logging.error(f"Error extracting forecast data for {city_name}: {e}")
-        return None
-    except json.JSONDecodeError:
-        logging.error("API response:")
+    for attempt in range(max_retries):
         try:
-            logging.error(response.text[:500])
-        except Exception:
-             logging.error("Could not get response from API.")
-        return None
+            # Increase timeout to 60 seconds to give Azure more time to get information
+            response = requests.get(url, timeout=60) 
+            response.raise_for_status()
+            logging.info(f"Forecast data extracted for {city_name} on attempt {attempt + 1}.")
+            return response.json()
+
+        except (requests.exceptions.RequestException) as e:
+            if attempt < max_retries - 1:
+                logging.warning(f"Attempt {attempt + 1} failed for {city_name}: {e}. Retrying in {retry_delay}s...")
+                time.sleep(retry_delay)
+
+                # Double the wait time for the next attempt
+                retry_delay *= 2
+            else:
+                logging.error(f"Final failure for {city_name} after {max_retries} attempts: {e}")
+                return None
+        except json.JSONDecodeError:
+            logging.error(f"Invalid JSON response for {city_name}")
+            return None
 
 
 # Function to process the data

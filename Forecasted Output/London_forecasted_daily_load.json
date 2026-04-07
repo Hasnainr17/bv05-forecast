@@ -1,114 +1,114 @@
 [
   {
     "date":"2026-04-06",
-    "forecast_residential_load":1900210.9155316164,
-    "forecast_ci_load":608094.8815661639,
+    "forecast_residential_load":1903630.7582371025,
+    "forecast_ci_load":609302.299234551,
     "temperature":2.3,
-    "wind_speed":8.4
+    "wind_speed":9.4
   },
   {
     "date":"2026-04-07",
-    "forecast_residential_load":1941032.2991318959,
-    "forecast_ci_load":765408.1136007693,
-    "temperature":-3.4,
-    "wind_speed":18.7
+    "forecast_residential_load":1947689.0442718978,
+    "forecast_ci_load":767558.6239184141,
+    "temperature":-3.7,
+    "wind_speed":18.3
   },
   {
     "date":"2026-04-08",
-    "forecast_residential_load":1794133.7572797923,
-    "forecast_ci_load":744638.6621087706,
-    "temperature":0.2,
-    "wind_speed":13.0
+    "forecast_residential_load":1797834.6041655035,
+    "forecast_ci_load":745878.7132042865,
+    "temperature":0.1,
+    "wind_speed":13.3
   },
   {
     "date":"2026-04-09",
-    "forecast_residential_load":1592574.8005242296,
-    "forecast_ci_load":682215.0734623846,
-    "temperature":9.6,
-    "wind_speed":26.6
+    "forecast_residential_load":1614755.9855671048,
+    "forecast_ci_load":689247.4717640602,
+    "temperature":8.4,
+    "wind_speed":23.7
   },
   {
     "date":"2026-04-10",
-    "forecast_residential_load":1557037.7266355692,
-    "forecast_ci_load":675365.143859593,
-    "temperature":10.1,
-    "wind_speed":21.5
+    "forecast_residential_load":1536982.6148538482,
+    "forecast_ci_load":668417.5962955283,
+    "temperature":10.3,
+    "wind_speed":17.2
   },
   {
     "date":"2026-04-11",
-    "forecast_residential_load":1632509.4631790235,
-    "forecast_ci_load":684823.1418567655,
-    "temperature":6.2,
-    "wind_speed":9.5
+    "forecast_residential_load":1633071.4715394739,
+    "forecast_ci_load":684888.4087110232,
+    "temperature":6.0,
+    "wind_speed":8.1
   },
   {
     "date":"2026-04-12",
-    "forecast_residential_load":1631128.4504334065,
-    "forecast_ci_load":570075.6772924411,
+    "forecast_residential_load":1630444.4818923094,
+    "forecast_ci_load":569834.1937587637,
     "temperature":12.2,
-    "wind_speed":24.4
+    "wind_speed":24.2
   },
   {
     "date":"2026-04-13",
-    "forecast_residential_load":1603534.505379159,
-    "forecast_ci_load":540386.642438848,
-    "temperature":17.7,
-    "wind_speed":32.7
+    "forecast_residential_load":1617573.6574879983,
+    "forecast_ci_load":494561.9352489676,
+    "temperature":15.5,
+    "wind_speed":29.0
   },
   {
     "date":"2026-04-14",
-    "forecast_residential_load":1462605.3279636721,
-    "forecast_ci_load":608078.2381309217,
-    "temperature":14.0,
-    "wind_speed":14.9
+    "forecast_residential_load":1564861.1036813911,
+    "forecast_ci_load":642316.7017380155,
+    "temperature":11.2,
+    "wind_speed":22.9
   },
   {
     "date":"2026-04-15",
-    "forecast_residential_load":1474477.3216552094,
-    "forecast_ci_load":640102.3337078525,
-    "temperature":12.7,
-    "wind_speed":17.3
+    "forecast_residential_load":1807298.9122840704,
+    "forecast_ci_load":750218.8824709028,
+    "temperature":1.6,
+    "wind_speed":27.8
   },
   {
     "date":"2026-04-16",
-    "forecast_residential_load":1606659.6145307322,
-    "forecast_ci_load":685390.2695647987,
-    "temperature":6.9,
-    "wind_speed":9.6
+    "forecast_residential_load":1812356.1627773945,
+    "forecast_ci_load":754085.8388272113,
+    "temperature":1.0,
+    "wind_speed":23.6
   },
   {
     "date":"2026-04-17",
-    "forecast_residential_load":1593717.398769672,
-    "forecast_ci_load":686917.2048447832,
-    "temperature":8.0,
-    "wind_speed":15.8
+    "forecast_residential_load":1714307.656192516,
+    "forecast_ci_load":726363.8907071959,
+    "temperature":3.3,
+    "wind_speed":14.3
   },
   {
     "date":"2026-04-18",
-    "forecast_residential_load":1502635.3590848965,
-    "forecast_ci_load":643163.9364245492,
-    "temperature":12.5,
-    "wind_speed":20.8
+    "forecast_residential_load":1583677.4013047493,
+    "forecast_ci_load":668780.7940130905,
+    "temperature":8.0,
+    "wind_speed":9.3
   },
   {
     "date":"2026-04-19",
-    "forecast_residential_load":1713318.4056455521,
-    "forecast_ci_load":596230.9768609183,
-    "temperature":7.9,
-    "wind_speed":14.8
+    "forecast_residential_load":1592704.2519513161,
+    "forecast_ci_load":556376.3827270849,
+    "temperature":12.0,
+    "wind_speed":11.6
   },
   {
     "date":"2026-04-20",
-    "forecast_residential_load":1837564.3351072122,
-    "forecast_ci_load":587774.3545726517,
-    "temperature":5.0,
-    "wind_speed":11.2
+    "forecast_residential_load":1619871.9622962703,
+    "forecast_ci_load":516308.2398771466,
+    "temperature":13.1,
+    "wind_speed":10.9
   },
   {
     "date":"2026-04-21",
-    "forecast_residential_load":1580862.6755829994,
-    "forecast_ci_load":646767.8399651734,
-    "temperature":9.4,
-    "wind_speed":13.5
+    "forecast_residential_load":1633944.4051558957,
+    "forecast_ci_load":664843.2139617534,
+    "temperature":8.4,
+    "wind_speed":21.2
   }
 ]
