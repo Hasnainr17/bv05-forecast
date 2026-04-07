@@ -23,10 +23,9 @@
          padding: 28px;
       }
 
-      /* --- NEW LAYOUT CSS --- */
       .dashboard-layout {
          display: flex;
-         max-width: 1400px; /* Kept constrained for proper chart UI */
+         max-width: 1400px;
          margin: 0 auto;
          gap: 30px;
          align-items: flex-start;
@@ -85,7 +84,6 @@
          from { opacity: 0; transform: translateY(5px); }
          to { opacity: 1; transform: translateY(0); }
       }
-      /* ---------------------- */
 
       .card {
          background: rgba(255, 255, 255, 0.08);
@@ -174,7 +172,7 @@
 
       .summary-grid {
          display: grid;
-         grid-template-columns: repeat(3, 1fr);
+         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
          gap: 18px;
          margin-top: 16px;
       }
@@ -306,7 +304,6 @@
          border-top: 1px solid rgba(255, 255, 255, 0.15);
       }
 
-      /* Alert styles added to handle the python script outputs gracefully */
       .alert {
          padding: 16px;
          border-radius: 14px;
@@ -314,11 +311,13 @@
          font-weight: 500;
          text-align: center;
       }
+
       .alert-warning {
          background: rgba(245, 158, 11, 0.15);
          border-left: 4px solid #f59e0b;
          color: #fcd34d;
       }
+
       .alert-danger {
          background: rgba(239, 68, 68, 0.15);
          border-left: 4px solid #ef4444;
@@ -393,7 +392,6 @@
    {% set forecast_has_error = forecast_message and ('error' in forecast_message|lower or 'failed' in forecast_message|lower) %}
    {% set upload_has_error = user_message and ('error' in user_message|lower or 'failed' in user_message|lower) %}
    {% set manual_has_error = input_errors and input_errors|length > 0 and not user_output %}
-   
    {% set val_str = validation_html | string %}
    {% set validation_has_error = validation_html and ('<div class="alert' in val_str[:100]) %}
 
@@ -446,25 +444,35 @@
 
                <hr class="results-divider" style="margin-top: 24px;">
 
-               <h2>Next Forecast Day</h2>
+               <h2>Today's Forecasted Day</h2>
                <p class="section-text">
-                  The following day reflects the next available model output based on projected weather conditions
-                  and the regression-based demand relationship for {{ selected_city }}.
+                  The summary below shows the forecasted weather and electricity demand for today in {{ selected_city }},
+                  based on the latest available regression-model output.
                </p>
                <div class="summary-grid">
                   <div class="mini-box">
                      <div class="mini-label">Date</div>
-                     <div class="mini-value">{{ next_day.date }}</div>
-                     <div class="mini-caption">Next forecasted day</div>
+                     <div class="mini-value">{{ today_day.date }}</div>
+                     <div class="mini-caption">Today's forecast date</div>
+                  </div>
+                  <div class="mini-box">
+                     <div class="mini-label">Temperature</div>
+                     <div class="mini-value">{{ today_day.temperature }}°C</div>
+                     <div class="mini-caption">Forecasted daily temperature</div>
+                  </div>
+                  <div class="mini-box">
+                     <div class="mini-label">Wind Speed</div>
+                     <div class="mini-value">{{ today_day.wind_speed }} km/h</div>
+                     <div class="mini-caption">Forecasted daily wind speed</div>
                   </div>
                   <div class="mini-box">
                      <div class="mini-label">Residential Load</div>
-                     <div class="mini-value">{{ "%.2f"|format(next_day.forecast_residential_load) }}Wh</div>
+                     <div class="mini-value">{{ "%.2f"|format(today_day.forecast_residential_load) }}Wh</div>
                      <div class="mini-caption">Projected residential demand</div>
                   </div>
                   <div class="mini-box">
                      <div class="mini-label">C&amp;I Load</div>
-                     <div class="mini-value">{{ "%.2f"|format(next_day.forecast_ci_load) }}Wh</div>
+                     <div class="mini-value">{{ "%.2f"|format(today_day.forecast_ci_load) }}Wh</div>
                      <div class="mini-caption">Projected commercial &amp; industrial demand</div>
                   </div>
                </div>
@@ -664,7 +672,6 @@
          </div>
 
          <div id="tab-validation" class="tab-section">
-            
             <div class="card" id="validation-section">
                {% if show_validation and not validation_has_error %}
                <div class="message section-message">
@@ -692,14 +699,14 @@
                      </div>
                      <div style="min-width: 180px;">
                         <label style="display:block; margin-bottom: 6px; color:#cbd5e1;">Start Date</label>
-                        <input type="date" name="validation_start_date" 
+                        <input type="date" name="validation_start_date"
                                value="{{ request.form.get('validation_start_date', '') }}"
                                min="2023-01-01" max="2025-12-31"
                                style="width:100%; padding:12px; border-radius:12px;" required>
                      </div>
                      <div style="min-width: 180px;">
                         <label style="display:block; margin-bottom: 6px; color:#cbd5e1;">End Date</label>
-                        <input type="date" name="validation_end_date" 
+                        <input type="date" name="validation_end_date"
                                value="{{ request.form.get('validation_end_date', '') }}"
                                min="2023-01-01" max="2025-12-31"
                                style="width:100%; padding:12px; border-radius:12px;" required>
@@ -712,6 +719,7 @@
                   </div>
                </form>
             </div>
+
             {% if show_validation and validation_html %}
                {% if validation_has_error %}
                   <div class="card" style="margin-top: 20px;">
@@ -723,7 +731,6 @@
                   </div>
                {% endif %}
             {% endif %}
-
          </div>
 
       </div>
@@ -746,12 +753,12 @@
       });
 
       document.getElementById(targetTabId).classList.add('active');
-      if(clickedBtn) {
+      if (clickedBtn) {
          clickedBtn.classList.add('active');
       } else {
          const btnId = "btn-" + targetTabId;
          const btn = document.getElementById(btnId);
-         if(btn) btn.classList.add('active');
+         if (btn) btn.classList.add('active');
       }
    }
 
@@ -808,7 +815,7 @@
       {% else %}
          const savedTab = sessionStorage.getItem("targetTab");
          const savedScroll = sessionStorage.getItem("scrollTarget");
-         
+
          if (savedTab) {
             switchTab(savedTab);
             sessionStorage.removeItem("targetTab");
