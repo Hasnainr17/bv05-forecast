@@ -98,8 +98,8 @@
 
       .hero {
          text-align: center;
-         padding-top: 40px;
-         padding-bottom: 28px;
+         padding-top: 10px;
+         padding-bottom: 10px;
       }
 
       h1 {
@@ -390,10 +390,10 @@
 </head>
 <body>
    {% set forecast_has_error = forecast_message and ('error' in forecast_message|lower or 'failed' in forecast_message|lower) %}
-   {% set upload_has_error = user_message and ('error' in user_message|lower or 'failed' in user_message|lower) %}
-   {% set manual_has_error = input_errors and input_errors|length > 0 and not user_output %}
+   {% set manual_has_error = manual_message and ('error' in manual_message|lower or 'failed' in manual_message|lower) %}
+   {% set upload_has_error = upload_message and ('error' in upload_message|lower or 'failed' in upload_message|lower) %}
+   {% set validation_has_error = validation_message and ('could not' in validation_message|lower or 'error' in validation_message|lower or 'failed' in validation_message|lower) %}
    {% set val_str = validation_html | string %}
-   {% set validation_has_error = validation_html and ('<div class="alert' in val_str[:100]) %}
 
    <div id="loadingOverlay" class="loading-overlay">
       <div class="loading-box">
@@ -420,7 +420,7 @@
                </div>
                {% endif %}
 
-               <div class="hero" style="padding-top: 10px; padding-bottom: 10px;">
+               <div class="hero">
                   <h1>Forecast Dashboard</h1>
                   <p>
                      A cloud-hosted regression-based platform for forecasting weather, residential load,
@@ -514,16 +514,6 @@
 
          <div id="tab-user-input" class="tab-section">
             <div class="card" id="user-forecast">
-               {% if user_output %}
-               <div class="message section-message">
-                  Success! Forecast generated for {{ selected_city }}.
-               </div>
-               {% elif manual_has_error %}
-               <div class="message section-message message-error">
-                  Please correct the highlighted input fields and try again.
-               </div>
-               {% endif %}
-
                <h2>User Input Forecast</h2>
                <p class="section-text">
                   Users can provide custom forecasting inputs through the interface to generate forecast outputs for a selected city.
@@ -539,7 +529,7 @@
                            <label>Select City</label>
                            <select name="user_city" style="max-width: 300px;">
                               {% for city in cities %}
-                              <option value="{{ city }}" {% if city == selected_city %}selected{% endif %}>{{ city }}</option>
+                              <option value="{{ city }}" {% if city == manual_selected_city %}selected{% endif %}>{{ city }}</option>
                               {% endfor %}
                            </select>
                         </div>
@@ -589,12 +579,19 @@
                         </div>
                      </form>
 
-                     {% if user_output %}
+                     {% if user_output or manual_message %}
                      <hr class="results-divider">
                      <div class="output-box" style="margin-top: 30px;">
+                        {% if manual_message %}
+                        <div class="message section-message {% if manual_has_error %}message-error{% endif %}">
+                           {{ manual_message }}
+                        </div>
+                        {% endif %}
+
+                        {% if user_output %}
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                            <h3 style="margin: 0;">Custom Forecast Results</h3>
-                           <a href="{{ url_for('download_file', filename=selected_city + '_user_forecast.xlsx') }}"
+                           <a href="{{ url_for('download_file', filename=manual_selected_city + '_user_forecast.xlsx') }}"
                               class="btn" style="text-decoration: none; padding: 10px 16px; font-size: 0.9rem; background: #10b981;">
                               ↓ Download Excel
                            </a>
@@ -621,6 +618,7 @@
                               {% endfor %}
                            </tbody>
                         </table>
+                        {% endif %}
                      </div>
                      {% endif %}
                   </div>
@@ -628,12 +626,6 @@
             </div>
 
             <div class="card" id="file-upload-section">
-               {% if user_message %}
-               <div class="message section-message {% if upload_has_error %}message-error{% endif %}">
-                  {{ user_message }}
-               </div>
-               {% endif %}
-
                <h2>Bulk File Upload</h2>
                <p class="section-text">
                   Have a large dataset? Upload your own CSV or Excel file containing weather projections.
@@ -656,7 +648,7 @@
                            <label style="display: block; margin-bottom: 8px;">Select City</label>
                            <select name="user_city" style="width: 200px;">
                               {% for city in cities %}
-                              <option value="{{ city }}" {% if city == selected_city %}selected{% endif %}>{{ city }}</option>
+                              <option value="{{ city }}" {% if city == upload_selected_city %}selected{% endif %}>{{ city }}</option>
                               {% endfor %}
                            </select>
                         </div>
@@ -666,6 +658,15 @@
                         </div>
                         <button type="submit" class="btn" style="height: 46px;">Process File</button>
                      </form>
+
+                     {% if upload_message %}
+                     <hr class="results-divider">
+                     <div class="output-box" style="margin-top: 30px;">
+                        <div class="message section-message {% if upload_has_error %}message-error{% endif %}">
+                           {{ upload_message }}
+                        </div>
+                     </div>
+                     {% endif %}
                   </div>
                </div>
             </div>
@@ -673,16 +674,6 @@
 
          <div id="tab-validation" class="tab-section">
             <div class="card" id="validation-section">
-               {% if show_validation and not validation_has_error %}
-               <div class="message section-message">
-                  Validation processing complete for {{ selected_city }}.
-               </div>
-               {% elif show_validation and validation_has_error %}
-               <div class="message section-message message-error">
-                  Validation could not be completed for {{ selected_city }}. Please review the error details below.
-               </div>
-               {% endif %}
-
                <h2>Interactive Model Validation</h2>
                <p class="section-text">
                   Evaluate model performance by comparing actual vs predicted residential and C&amp;I load over a selected date range.
@@ -693,7 +684,7 @@
                         <label style="display:block; margin-bottom: 6px; color:#cbd5e1;">City</label>
                         <select name="validation_city" style="width:100%; padding:12px; border-radius:12px;">
                            {% for c in cities %}
-                           <option value="{{ c }}" {% if c == request.form.get('validation_city', selected_city) %}selected{% endif %}>{{ c }}</option>
+                           <option value="{{ c }}" {% if c == validation_selected_city %}selected{% endif %}>{{ c }}</option>
                            {% endfor %}
                         </select>
                      </div>
@@ -718,19 +709,30 @@
                      </button>
                   </div>
                </form>
-            </div>
 
-            {% if show_validation and validation_html %}
-               {% if validation_has_error %}
-                  <div class="card" style="margin-top: 20px;">
-                     {{ validation_html | safe }}
+               {% if show_validation %}
+               <hr class="results-divider">
+               <div class="output-box" style="margin-top: 30px;">
+                  {% if validation_message %}
+                  <div class="message section-message {% if validation_has_error %}message-error{% endif %}">
+                     {{ validation_message }}
                   </div>
-               {% else %}
-                  <div style="margin-top: 20px;">
-                     {{ validation_html | safe }}
-                  </div>
+                  {% endif %}
+
+                  {% if validation_html %}
+                     {% if validation_has_error %}
+                     <div style="margin-top: 20px;">
+                        {{ validation_html | safe }}
+                     </div>
+                     {% else %}
+                     <div style="margin-top: 20px;">
+                        {{ validation_html | safe }}
+                     </div>
+                     {% endif %}
+                  {% endif %}
+               </div>
                {% endif %}
-            {% endif %}
+            </div>
          </div>
 
       </div>
@@ -802,12 +804,12 @@
          scrollToSection("validation-section");
          sessionStorage.removeItem("targetTab");
          sessionStorage.removeItem("scrollTarget");
-      {% elif user_output or manual_has_error %}
+      {% elif user_output or manual_message %}
          switchTab("tab-user-input");
          scrollToSection("user-forecast");
          sessionStorage.removeItem("targetTab");
          sessionStorage.removeItem("scrollTarget");
-      {% elif user_message %}
+      {% elif upload_message %}
          switchTab("tab-user-input");
          scrollToSection("file-upload-section");
          sessionStorage.removeItem("targetTab");
