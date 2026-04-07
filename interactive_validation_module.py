@@ -73,40 +73,25 @@ def get_validation_section(location: str, start_date: str, end_date: str):
             mode="lines"
         )
     )
-    fig_res.update_layout(
-        title=f"Residential Load Validation - {location}",
-        xaxis_title="Date",
-        yaxis_title="Load (kW)",
-        height=520,
-        template="plotly_white"
-    )
-    fig_res.update_xaxes(tickformat="%Y-%m-%d")
+fig_res.update_layout(
+    title=f"Residential Load Validation - {location}",
+    xaxis_title="Date",
+    yaxis_title="Residential Load (Wh)",
+    height=520,
+    template="plotly_white"
+)
+fig_res.update_xaxes(tickformat="%Y-%m-%d")
+fig_res.update_yaxes(tickformat=",.0f")
 
-    fig_ci = go.Figure()
-    fig_ci.add_trace(
-        go.Scatter(
-            x=filtered_df["Date"],
-            y=filtered_df["ci_actual"],
-            name="Actual C&I Load",
-            mode="lines"
-        )
-    )
-    fig_ci.add_trace(
-        go.Scatter(
-            x=filtered_df["Date"],
-            y=filtered_df["ci_predicted"],
-            name="Predicted C&I Load",
-            mode="lines"
-        )
-    )
-    fig_ci.update_layout(
-        title=f"C&I Load Validation - {location}",
-        xaxis_title="Date",
-        yaxis_title="Load (kW)",
-        height=520,
-        template="plotly_white"
-    )
-    fig_ci.update_xaxes(tickformat="%Y-%m-%d")
+fig_ci.update_layout(
+    title=f"C&I Load Validation - {location}",
+    xaxis_title="Date",
+    yaxis_title="C&I Load (Wh)",
+    height=520,
+    template="plotly_white"
+)
+fig_ci.update_xaxes(tickformat="%Y-%m-%d")
+fig_ci.update_yaxes(tickformat=",.0f")
 
     return Markup(f"""
     <div class="card">
