@@ -58,12 +58,12 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 VALIDATION_DIR.mkdir(parents=True, exist_ok=True)
 
 LOCATIONS = {
-    "Toronto": "toronto_his_load.csv",
-    "Ottawa": "ottawa_his_load.csv",
-    "Hamilton": "hamilton_his_load.csv",
-    "Mississauga": "mississauga_his_load.csv",
-    "Brampton": "brampton_his_load.csv",
-    "London": "london_his_load.csv"
+    "Toronto": "Toronto_his_load.csv",
+    "Ottawa": "Ottawa_his_load.csv",
+    "Hamilton": "Hamilton_his_load.csv",
+    "Mississauga": "Mississauga_his_load.csv",
+    "Brampton": "Brampton_his_load.csv",
+    "London": "London_his_load.csv"
 }
 
 DEFAULT_LOG_FILE = "load_forecast_log.txt"
