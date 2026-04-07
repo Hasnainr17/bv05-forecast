@@ -102,6 +102,7 @@ def home():
     default_dates = [(datetime.today() + timedelta(days=i)).strftime("%Y-%m-%d") for i in range(5)]
 
     user_output = None
+    upload_output = None
     input_errors = {}
 
     manual_message = None
@@ -238,6 +239,7 @@ def home():
 
                 output_excel_path = run_user_forecast(target_filename, upload_selected_city)
                 df_out = pd.read_excel(output_excel_path)
+                upload_output = df_out.to_dict(orient='records')
 
                 download_dir = BASE_DIR / "Forecasted Output"
                 download_dir.mkdir(parents=True, exist_ok=True)
@@ -270,6 +272,7 @@ def home():
         latest_load=latest_load,
         next_day=next_day,
         user_output=user_output,
+        upload_output=upload_output,
         user_submitted_data=user_submitted_data,
         input_dates=input_dates,
         input_errors=input_errors,
@@ -354,6 +357,7 @@ def run_validation():
         validation_html=validation_html,
         show_validation=True,
         user_output=None,
+        upload_output=None,
         user_submitted_data=user_submitted_data,
         input_dates=default_dates,
         input_errors={},
