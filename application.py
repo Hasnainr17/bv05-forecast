@@ -7,7 +7,6 @@ import pandas as pd
 from pathlib import Path
 from werkzeug.utils import secure_filename
 
-# Import forecasting modules
 from user_load_forecast import run_user_forecast
 from load_forecast_json_and_csv_upgraded import (
     train_models_from_historical_csv,
@@ -17,15 +16,9 @@ from load_forecast_json_and_csv_upgraded import (
     LOCATIONS,
     perform_validation
 )
-
-# Import validation display
 from interactive_validation_module import get_validation_section
 
-# Initialize the flask app
 app = Flask(__name__)
-
-# Important for ensuring each user has their own secure data
-# and no data leaks into other users
 app.secret_key = 'BV_05'
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -33,7 +26,6 @@ CITIES = ["Toronto", "Ottawa", "Hamilton", "London", "Mississauga", "Brampton"]
 
 
 def build_weather(city, load_data):
-    # Use the actual data from the module
     if load_data:
         current = load_data[0]
         return {
@@ -43,7 +35,6 @@ def build_weather(city, load_data):
             "wind_speed": current.get("wind_speed", "N/A"),
         }
 
-    # Default values if error in obtaining actual values
     return {
         "city": city,
         "date": datetime.now().strftime("%Y-%m-%d"),
@@ -97,32 +88,46 @@ def get_forecast_summary_cards(load_data):
     return today_day, next_day, latest_load
 
 
-# Handles both the loading of the page (GET) and submitting forms (POST)
 @app.route("/", methods=["GET", "POST"])
 def home():
     city = request.args.get("city", "Toronto")
     if city not in CITIES:
         city = "Toronto"
 
-    input_dates = [(datetime.today() + timedelta(days=i)).strftime("%Y-%m-%d") for i in range(5)]
-    user_output = None
-    user_message = None
-    input_errors = {}
-
     load_data = build_load_forecast(city)
     weather_data = build_weather(city, load_data)
     today_day, next_day, latest_load = get_forecast_summary_cards(load_data)
 
+    input_dates = [(datetime.today() + timedelta(days=i)).strftime("%Y-%m-%d") for i in range(5)]
     default_dates = [(datetime.today() + timedelta(days=i)).strftime("%Y-%m-%d") for i in range(5)]
-    user_submitted_data = session.get('user_data', [{"date": d, "temp": "", "wind": ""} for d in default_dates])
+
+    user_output = None
+    input_errors = {}
+
+    manual_message = None
+    upload_message = None
+    validation_message = None
+
+    manual_selected_city = session.get("manual_selected_city", city)
+    upload_selected_city = session.get("upload_selected_city", city)
+    validation_selected_city = session.get("validation_selected_city", city)
+
+    user_submitted_data = session.get(
+        'user_data',
+        [{"date": d, "temp": "", "wind": ""} for d in default_dates]
+    )
 
     if request.method == "POST":
-        selected_city = request.form.get("user_city", city)
         form_type = request.form.get("form_type")
         target_filename = None
 
         try:
             if form_type == "manual_input":
+                manual_selected_city = request.form.get("user_city", city)
+                if manual_selected_city not in CITIES:
+                    manual_selected_city = city
+                session["manual_selected_city"] = manual_selected_city
+
                 temp_list, wind_list, date_list, new_data = [], [], [], []
 
                 today = datetime.today().date()
@@ -166,7 +171,8 @@ def home():
                 user_submitted_data = new_data
 
                 if input_errors:
-                    raise ValueError("Please correct the highlighted input fields and try again.")
+                    manual_message = f"Error for {manual_selected_city}: Please correct the highlighted input fields and try again."
+                    raise ValueError("manual_input_error")
 
                 unique_id = uuid.uuid4().hex
                 target_filename = str(BASE_DIR / f"user_input_{unique_id}.xlsx")
@@ -179,17 +185,35 @@ def home():
 
                 df_input.to_excel(target_filename, index=False)
 
+                output_excel_path = run_user_forecast(target_filename, manual_selected_city)
+                df_out = pd.read_excel(output_excel_path)
+                user_output = df_out.to_dict(orient='records')
+
+                download_dir = BASE_DIR / "Forecasted Output"
+                download_dir.mkdir(parents=True, exist_ok=True)
+                download_path = download_dir / f"{manual_selected_city}_user_forecast.xlsx"
+                df_out.to_excel(download_path, index=False)
+
+                manual_message = f"Success! Forecast generated for {manual_selected_city}."
+
             elif form_type == "file_upload":
+                upload_selected_city = request.form.get("user_city", city)
+                if upload_selected_city not in CITIES:
+                    upload_selected_city = city
+                session["upload_selected_city"] = upload_selected_city
+
                 uploaded_file = request.files.get("upload_file")
 
                 if not uploaded_file or uploaded_file.filename == '':
-                    raise ValueError("No file was selected for upload.")
+                    upload_message = f"Error for {upload_selected_city}: No file was selected for upload."
+                    raise ValueError("upload_error")
 
                 safe_name = secure_filename(uploaded_file.filename)
                 ext = safe_name.rsplit('.', 1)[1].lower() if '.' in safe_name else 'csv'
 
                 if ext not in ['csv', 'xlsx', 'xls']:
-                    raise ValueError("Only CSV or Excel files are allowed.")
+                    upload_message = f"Error for {upload_selected_city}: Only CSV or Excel files are allowed."
+                    raise ValueError("upload_error")
 
                 unique_id = uuid.uuid4().hex
                 target_filename = str(BASE_DIR / f"uploaded_{unique_id}.{ext}")
@@ -201,29 +225,33 @@ def home():
                     df_check = pd.read_excel(target_filename)
 
                 if df_check.empty:
-                    raise ValueError("The uploaded file contains headers but no data.")
+                    upload_message = f"Error for {upload_selected_city}: The uploaded file contains headers but no data."
+                    raise ValueError("upload_error")
 
                 actual_cols = [str(col).strip() for col in df_check.columns]
                 expected_cols = ["Date", "temperature_2m_mean (°C)", "wind_speed_10m_mean (km/h)"]
                 missing_cols = [col for col in expected_cols if col not in actual_cols]
 
                 if missing_cols:
-                    raise ValueError(f"Column Error! Missing: {', '.join(missing_cols)}")
+                    upload_message = f"Error for {upload_selected_city}: Missing columns: {', '.join(missing_cols)}"
+                    raise ValueError("upload_error")
 
-            if not input_errors:
-                output_excel_path = run_user_forecast(target_filename, selected_city)
+                output_excel_path = run_user_forecast(target_filename, upload_selected_city)
                 df_out = pd.read_excel(output_excel_path)
-                user_output = df_out.to_dict(orient='records')
 
                 download_dir = BASE_DIR / "Forecasted Output"
                 download_dir.mkdir(parents=True, exist_ok=True)
-                download_path = download_dir / f"{selected_city}_user_forecast.xlsx"
+                download_path = download_dir / f"{upload_selected_city}_user_forecast.xlsx"
                 df_out.to_excel(download_path, index=False)
 
-                user_message = f"Success! Forecast generated for {selected_city}."
+                upload_message = f"Success! Forecast generated for {upload_selected_city}."
 
         except Exception as e:
-            user_message = f"Error: {e}"
+            if str(e) not in ["manual_input_error", "upload_error"]:
+                if form_type == "manual_input":
+                    manual_message = f"Error for {manual_selected_city}: {e}"
+                elif form_type == "file_upload":
+                    upload_message = f"Error for {upload_selected_city}: {e}"
 
         finally:
             if target_filename and os.path.exists(target_filename):
@@ -242,28 +270,44 @@ def home():
         latest_load=latest_load,
         next_day=next_day,
         user_output=user_output,
-        user_message=user_message,
         user_submitted_data=user_submitted_data,
         input_dates=input_dates,
         input_errors=input_errors,
         min_date=min_date_str,
         max_date=max_date_str,
         validation_html=None,
-        show_validation=False
+        show_validation=False,
+        manual_message=manual_message,
+        upload_message=upload_message,
+        validation_message=validation_message,
+        manual_selected_city=manual_selected_city,
+        upload_selected_city=upload_selected_city,
+        validation_selected_city=validation_selected_city
     )
 
 
 @app.route("/run_validation", methods=["POST"])
 def run_validation():
-    city = request.form.get("validation_city", "Toronto")
+    city = request.args.get("city", "Toronto")
+    if city not in CITIES:
+        city = "Toronto"
+
+    validation_selected_city = request.form.get("validation_city", city)
+    if validation_selected_city not in CITIES:
+        validation_selected_city = city
+    session["validation_selected_city"] = validation_selected_city
+
     start_date = request.form.get("validation_start_date")
     end_date = request.form.get("validation_end_date")
 
-    try:
-        if city not in LOCATIONS:
-            raise ValueError(f"City '{city}' not supported.")
+    validation_html = None
+    validation_message = None
 
-        hist_path = DATA_DIR / LOCATIONS[city]
+    try:
+        if validation_selected_city not in LOCATIONS:
+            raise ValueError(f"City '{validation_selected_city}' not supported.")
+
+        hist_path = DATA_DIR / LOCATIONS[validation_selected_city]
         res_model, ci_model = train_models_from_historical_csv(hist_path)
 
         perform_validation(
@@ -271,17 +315,19 @@ def run_validation():
             ci_model=ci_model,
             output_csv="Interactive_model_validation.xlsx",
             hist_path=hist_path,
-            city=city,
+            city=validation_selected_city,
             start_date=start_date,
             end_date=end_date,
         )
 
-        validation_html = get_validation_section(city, start_date, end_date)
+        validation_html = get_validation_section(validation_selected_city, start_date, end_date)
+        validation_message = f"Validation processing complete for {validation_selected_city}."
 
     except Exception as e:
+        validation_message = f"Validation could not be completed for {validation_selected_city}."
         validation_html = Markup(f'''
             <div class="alert alert-warning">
-                <strong>Validation Error:</strong> {str(e)}<br>
+                <strong>Validation Error for {validation_selected_city}:</strong> {str(e)}<br>
                 Please try again or check the date range.
             </div>
         ''')
@@ -291,7 +337,10 @@ def run_validation():
     today_day, next_day, latest_load = get_forecast_summary_cards(load_data)
 
     default_dates = [(datetime.today() + timedelta(days=i)).strftime("%Y-%m-%d") for i in range(5)]
-    user_submitted_data = session.get('user_data', [{"date": d, "temp": "", "wind": ""} for d in default_dates])
+    user_submitted_data = session.get(
+        'user_data',
+        [{"date": d, "temp": "", "wind": ""} for d in default_dates]
+    )
 
     return render_template(
         "index.html",
@@ -305,23 +354,26 @@ def run_validation():
         validation_html=validation_html,
         show_validation=True,
         user_output=None,
-        user_message=None,
         user_submitted_data=user_submitted_data,
         input_dates=default_dates,
         input_errors={},
         min_date=(datetime.today() - timedelta(days=365)).strftime("%Y-%m-%d"),
-        max_date=(datetime.today() + timedelta(days=365)).strftime("%Y-%m-%d")
+        max_date=(datetime.today() + timedelta(days=365)).strftime("%Y-%m-%d"),
+        manual_message=None,
+        upload_message=None,
+        validation_message=validation_message,
+        manual_selected_city=session.get("manual_selected_city", city),
+        upload_selected_city=session.get("upload_selected_city", city),
+        validation_selected_city=validation_selected_city
     )
 
 
-# Download option for user
 @app.route('/download/<filename>')
 def download_file(filename):
     directory = BASE_DIR / "Forecasted Output"
     return send_from_directory(directory, filename, as_attachment=True)
 
 
-# Downloadable template for the user to use
 @app.route('/download_template')
 def download_template():
     try:
