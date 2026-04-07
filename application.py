@@ -55,6 +55,15 @@ def build_load_forecast(city):
         res_model, ci_model = train_models_from_historical_csv(hist_path)
         out_df = forecast_daily_load(res_model, ci_model, forecast_df)
 
+        # normalize for template safety
+        out_df = out_df.rename(columns={
+            "Date": "date",
+            "temperature_2m_mean (°C)": "temperature",
+            "wind_speed_10m_mean (km/h)": "wind_speed",
+            "forecast_residential_load": "forecast_residential_load",
+            "forecast_ci_load": "forecast_ci_load"
+        })
+
         return out_df.to_dict(orient='records')
     except Exception as e:
         print(f"Forecast error for {city}: {e}")
@@ -88,6 +97,35 @@ def get_forecast_summary_cards(load_data):
     return today_day, next_day, latest_load
 
 
+def normalize_forecast_output(df):
+    df = df.copy()
+
+    rename_map = {
+        "Date": "date",
+        "date": "date",
+        "temperature_2m_mean (°C)": "temperature",
+        "Temperature": "temperature",
+        "temperature": "temperature",
+        "wind_speed_10m_mean (km/h)": "wind_speed",
+        "Wind Speed": "wind_speed",
+        "wind_speed": "wind_speed",
+        "forecast_residential_load": "forecast_residential_load",
+        "Residential Load": "forecast_residential_load",
+        "forecast_ci_load": "forecast_ci_load",
+        "C&I Load": "forecast_ci_load",
+        "CI Load": "forecast_ci_load"
+    }
+
+    df = df.rename(columns=rename_map)
+
+    expected_cols = ["date", "temperature", "wind_speed", "forecast_residential_load", "forecast_ci_load"]
+    for col in expected_cols:
+        if col not in df.columns:
+            df[col] = ""
+
+    return df[expected_cols]
+
+
 @app.route("/", methods=["GET", "POST"])
 def home():
     city = request.args.get("city", "Toronto")
@@ -109,9 +147,10 @@ def home():
     upload_message = None
     validation_message = None
 
-    manual_selected_city = session.get("manual_selected_city", city)
-    upload_selected_city = session.get("upload_selected_city", city)
-    validation_selected_city = session.get("validation_selected_city", city)
+    # default all selectors to Toronto on fresh open
+    manual_selected_city = "Toronto"
+    upload_selected_city = "Toronto"
+    validation_selected_city = "Toronto"
 
     user_submitted_data = session.get(
         'user_data',
@@ -124,10 +163,9 @@ def home():
 
         try:
             if form_type == "manual_input":
-                manual_selected_city = request.form.get("user_city", city)
+                manual_selected_city = request.form.get("user_city", "Toronto")
                 if manual_selected_city not in CITIES:
-                    manual_selected_city = city
-                session["manual_selected_city"] = manual_selected_city
+                    manual_selected_city = "Toronto"
 
                 temp_list, wind_list, date_list, new_data = [], [], [], []
 
@@ -188,6 +226,12 @@ def home():
 
                 output_excel_path = run_user_forecast(target_filename, manual_selected_city)
                 df_out = pd.read_excel(output_excel_path)
+                df_out = normalize_forecast_output(df_out)
+
+                if df_out.empty:
+                    manual_message = f"Error for {manual_selected_city}: The forecast completed but returned no rows."
+                    raise ValueError("manual_input_error")
+
                 user_output = df_out.to_dict(orient='records')
 
                 download_dir = BASE_DIR / "Forecasted Output"
@@ -198,10 +242,9 @@ def home():
                 manual_message = f"Success! Forecast generated for {manual_selected_city}."
 
             elif form_type == "file_upload":
-                upload_selected_city = request.form.get("user_city", city)
+                upload_selected_city = request.form.get("user_city", "Toronto")
                 if upload_selected_city not in CITIES:
-                    upload_selected_city = city
-                session["upload_selected_city"] = upload_selected_city
+                    upload_selected_city = "Toronto"
 
                 uploaded_file = request.files.get("upload_file")
 
@@ -239,6 +282,12 @@ def home():
 
                 output_excel_path = run_user_forecast(target_filename, upload_selected_city)
                 df_out = pd.read_excel(output_excel_path)
+                df_out = normalize_forecast_output(df_out)
+
+                if df_out.empty:
+                    upload_message = f"Error for {upload_selected_city}: The uploaded forecast returned no rows."
+                    raise ValueError("upload_error")
+
                 upload_output = df_out.to_dict(orient='records')
 
                 download_dir = BASE_DIR / "Forecasted Output"
@@ -295,10 +344,9 @@ def run_validation():
     if city not in CITIES:
         city = "Toronto"
 
-    validation_selected_city = request.form.get("validation_city", city)
+    validation_selected_city = request.form.get("validation_city", "Toronto")
     if validation_selected_city not in CITIES:
-        validation_selected_city = city
-    session["validation_selected_city"] = validation_selected_city
+        validation_selected_city = "Toronto"
 
     start_date = request.form.get("validation_start_date")
     end_date = request.form.get("validation_end_date")
@@ -366,8 +414,8 @@ def run_validation():
         manual_message=None,
         upload_message=None,
         validation_message=validation_message,
-        manual_selected_city=session.get("manual_selected_city", city),
-        upload_selected_city=session.get("upload_selected_city", city),
+        manual_selected_city="Toronto",
+        upload_selected_city="Toronto",
         validation_selected_city=validation_selected_city
     )
 
