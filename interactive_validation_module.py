@@ -57,22 +57,64 @@ def get_validation_section(location: str, start_date: str, end_date: str):
     rmsp_ci = calculate_rmsp(filtered_df["ci_actual"], filtered_df["ci_predicted"])
 
     fig_res = go.Figure()
-    fig_res.add_trace(go.Scatter(x=filtered_df["Date"], y=filtered_df["res_actual"], name="Actual"))
-    fig_res.add_trace(go.Scatter(x=filtered_df["Date"], y=filtered_df["res_predicted"], name="Predicted"))
-    fig_res.update_layout(title=f"Residential Load Validation - {location}", height=520, template="plotly_white")
+    fig_res.add_trace(
+        go.Scatter(
+            x=filtered_df["Date"],
+            y=filtered_df["res_actual"],
+            name="Actual Residential Load",
+            mode="lines"
+        )
+    )
+    fig_res.add_trace(
+        go.Scatter(
+            x=filtered_df["Date"],
+            y=filtered_df["res_predicted"],
+            name="Predicted Residential Load",
+            mode="lines"
+        )
+    )
+    fig_res.update_layout(
+        title=f"Residential Load Validation - {location}",
+        xaxis_title="Date",
+        yaxis_title="Load (kW)",
+        height=520,
+        template="plotly_white"
+    )
+    fig_res.update_xaxes(tickformat="%Y-%m-%d")
 
     fig_ci = go.Figure()
-    fig_ci.add_trace(go.Scatter(x=filtered_df["Date"], y=filtered_df["ci_actual"], name="Actual"))
-    fig_ci.add_trace(go.Scatter(x=filtered_df["Date"], y=filtered_df["ci_predicted"], name="Predicted"))
-    fig_ci.update_layout(title=f"C&I Load Validation - {location}", height=520, template="plotly_white")
+    fig_ci.add_trace(
+        go.Scatter(
+            x=filtered_df["Date"],
+            y=filtered_df["ci_actual"],
+            name="Actual C&I Load",
+            mode="lines"
+        )
+    )
+    fig_ci.add_trace(
+        go.Scatter(
+            x=filtered_df["Date"],
+            y=filtered_df["ci_predicted"],
+            name="Predicted C&I Load",
+            mode="lines"
+        )
+    )
+    fig_ci.update_layout(
+        title=f"C&I Load Validation - {location}",
+        xaxis_title="Date",
+        yaxis_title="Load (kW)",
+        height=520,
+        template="plotly_white"
+    )
+    fig_ci.update_xaxes(tickformat="%Y-%m-%d")
 
     return Markup(f"""
     <div class="card">
         <h2>Interactive Model Validation</h2>
         <p>Actual vs Predicted comparison for <strong>{location}</strong> from <strong>{start_date}</strong> to <strong>{end_date}</strong></p>
         <p><strong>Residential RMSPE:</strong> {rmsp_res}%</p>
-        <p><strong>C&I RMSPE:</strong> {rmsp_ci}%</p>
+        <p><strong>C&amp;I RMSPE:</strong> {rmsp_ci}%</p>
         <div>{fig_res.to_html(full_html=False)}</div>
-        <div>{fig_ci.to_html(full_html=False)}</div>
+        <div style="margin-top: 24px;">{fig_ci.to_html(full_html=False)}</div>
     </div>
     """)
