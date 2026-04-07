@@ -648,48 +648,48 @@
                         <button type="submit" class="btn" style="height: 46px;">Process File</button>
                      </form>
 
-                     {% if upload_message or upload_output %}
-                     <hr class="results-divider">
-                     <div class="output-box" style="margin-top: 30px;">
-                        {% if upload_message %}
-                        <div class="message section-message {% if upload_has_error %}message-error{% endif %}">
-                           {{ upload_message }}
-                        </div>
-                        {% endif %}
+{% if upload_message or upload_output %}
+<hr class="results-divider">
+<div class="output-box" style="margin-top: 30px;">
+   {% if upload_message %}
+   <div class="message section-message {% if upload_has_error %}message-error{% endif %}">
+      {{ upload_message }}
+   </div>
+   {% endif %}
 
-                        {% if upload_output %}
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                           <h3 style="margin: 0;">Bulk Upload Forecast Results</h3>
-                           <a href="{{ url_for('download_file', filename=upload_selected_city + '_user_forecast.xlsx') }}"
-                              class="btn" style="text-decoration: none; padding: 10px 16px; font-size: 0.9rem; background: #10b981;">
-                              ↓ Download Excel
-                           </a>
-                        </div>
-                        <table>
-                           <thead>
-                              <tr>
-                                 <th>Date</th>
-                                 <th>Temperature (°C)</th>
-                                 <th>Wind Speed (km/h)</th>
-                                 <th>Residential Load (Wh)</th>
-                                 <th>C&amp;I Load (Wh)</th>
-                              </tr>
-                           </thead>
-                           <tbody>
-                              {% for row in upload_output %}
-                              <tr>
-                                 <td>{{ row.date }}</td>
-                                 <td>{{ row.temperature }}</td>
-                                 <td>{{ row.wind_speed }}</td>
-                                 <td>{{ "%.2f"|format(row.forecast_residential_load) }}</td>
-                                 <td>{{ "%.2f"|format(row.forecast_ci_load) }}</td>
-                              </tr>
-                              {% endfor %}
-                           </tbody>
-                        </table>
-                        {% endif %}
-                     </div>
-                     {% endif %}
+   {% if upload_output %}
+   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+      <h3 style="margin: 0;">Bulk Upload Forecast Results</h3>
+      <a href="{{ url_for('download_file', filename=upload_selected_city + '_user_forecast.xlsx') }}"
+         class="btn" style="text-decoration: none; padding: 10px 16px; font-size: 0.9rem; background: #10b981;">
+         ↓ Download Excel
+      </a>
+   </div>
+   <table>
+      <thead>
+         <tr>
+            <th>Date</th>
+            <th>Temperature (°C)</th>
+            <th>Wind Speed (km/h)</th>
+            <th>Residential Load (Wh)</th>
+            <th>C&amp;I Load (Wh)</th>
+         </tr>
+      </thead>
+      <tbody>
+         {% for row in upload_output %}
+         <tr>
+            <td>{{ row.date }}</td>
+            <td>{{ row.temperature }}</td>
+            <td>{{ row.wind_speed }}</td>
+            <td>{{ "%.2f"|format(row.forecast_residential_load) }}</td>
+            <td>{{ "%.2f"|format(row.forecast_ci_load) }}</td>
+         </tr>
+         {% endfor %}
+      </tbody>
+   </table>
+   {% endif %}
+</div>
+{% endif %}
                   </div>
                </div>
             </div>
