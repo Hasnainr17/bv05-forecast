@@ -58,12 +58,12 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 VALIDATION_DIR.mkdir(parents=True, exist_ok=True)
 
 LOCATIONS = {
-    "Toronto": "Toronto_his_load.csv",
-    "Ottawa": "Ottawa_his_load.csv",
-    "Hamilton": "Hamilton_his_load.csv",
-    "Mississauga": "Mississauga_his_load.csv",
-    "Brampton": "Brampton_his_load.csv",
-    "London": "London_his_load.csv"
+    "Toronto": "toronto_his_load.csv",
+    "Ottawa": "ottawa_his_load.csv",
+    "Hamilton": "hamilton_his_load.csv",
+    "Mississauga": "mississauga_his_load.csv",
+    "Brampton": "brampton_his_load.csv",
+    "London": "london_his_load.csv"
 }
 
 DEFAULT_LOG_FILE = "load_forecast_log.txt"
@@ -77,11 +77,7 @@ logger.setLevel(logging.DEBUG)
 if logger.hasHandlers():
     logger.handlers.clear()
 
-# JS: Added log
-log_dir = BASE_DIR / "Log"
-log_dir.mkdir(parents=True, exist_ok=True)
-
-file_handler = logging.FileHandler(str(log_dir / DEFAULT_LOG_FILE), mode="w")
+file_handler = logging.FileHandler(str(BASE_DIR / "Log" / DEFAULT_LOG_FILE), mode="w")
 file_handler.setLevel(logging.DEBUG)
 file_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
 logger.addHandler(file_handler)
@@ -662,7 +658,17 @@ def perform_validation(
                 'name': f'Predicted {target}',
                 'values': ['Comparison', 1, pred_col, len(comparison_df), pred_col],
             })
+            # Set chart title
             chart.set_title({'name': f'{city} {target} Load Comparison'})
+
+            # Set axis titles
+            chart.set_x_axis({'name': 'Date'})
+    
+            if target == 'Residential':
+                chart.set_y_axis({'name': 'Residential Load (Wh)'})
+            else:
+                chart.set_y_axis({'name': 'C&I Load (Wh)'})
+                
             worksheet.insert_chart('G8' if i == 0 else 'G23', chart)
 
                 # Auto adjust column width
