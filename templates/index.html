@@ -446,7 +446,7 @@
 
                <h2>Today's Forecasted Day</h2>
                <p class="section-text">
-                  The summary below shows the forecasted weather and electricity demand for today in {{ selected_city }},
+                  The summary below shows the forecasted electricity demand for today in {{ selected_city }},
                   based on the latest available regression-model output.
                </p>
                <div class="summary-grid">
@@ -454,16 +454,6 @@
                      <div class="mini-label">Date</div>
                      <div class="mini-value">{{ today_day.date }}</div>
                      <div class="mini-caption">Today's forecast date</div>
-                  </div>
-                  <div class="mini-box">
-                     <div class="mini-label">Temperature</div>
-                     <div class="mini-value">{{ today_day.temperature }}°C</div>
-                     <div class="mini-caption">Forecasted daily temperature</div>
-                  </div>
-                  <div class="mini-box">
-                     <div class="mini-label">Wind Speed</div>
-                     <div class="mini-value">{{ today_day.wind_speed }} km/h</div>
-                     <div class="mini-caption">Forecasted daily wind speed</div>
                   </div>
                   <div class="mini-box">
                      <div class="mini-label">Residential Load</div>
@@ -692,14 +682,18 @@
                         <label style="display:block; margin-bottom: 6px; color:#cbd5e1;">Start Date</label>
                         <input type="date" name="validation_start_date"
                                value="{{ request.form.get('validation_start_date', '') }}"
-                               min="2023-01-01" max="2025-12-31"
+                               min="2023-01-01" max="2025-11-30"
+                               oninvalid="this.setCustomValidity('Start date must be between 2023-01-01 and 2025-11-30')"
+                               oninput="this.setCustomValidity('')"
                                style="width:100%; padding:12px; border-radius:12px;" required>
                      </div>
                      <div style="min-width: 180px;">
                         <label style="display:block; margin-bottom: 6px; color:#cbd5e1;">End Date</label>
                         <input type="date" name="validation_end_date"
                                value="{{ request.form.get('validation_end_date', '') }}"
-                               min="2023-01-01" max="2025-12-31"
+                               min="2023-01-01" max="2025-11-30"
+                               oninvalid="this.setCustomValidity('End date must be between 2023-01-01 and 2025-11-30')"
+                               oninput="this.setCustomValidity('')"
                                style="width:100%; padding:12px; border-radius:12px;" required>
                      </div>
                   </div>
@@ -720,15 +714,9 @@
                   {% endif %}
 
                   {% if validation_html %}
-                     {% if validation_has_error %}
                      <div style="margin-top: 20px;">
                         {{ validation_html | safe }}
                      </div>
-                     {% else %}
-                     <div style="margin-top: 20px;">
-                        {{ validation_html | safe }}
-                     </div>
-                     {% endif %}
                   {% endif %}
                </div>
                {% endif %}
