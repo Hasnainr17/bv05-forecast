@@ -393,7 +393,6 @@
    {% set manual_has_error = manual_message and ('error' in manual_message|lower or 'failed' in manual_message|lower) %}
    {% set upload_has_error = upload_message and ('error' in upload_message|lower or 'failed' in upload_message|lower) %}
    {% set validation_has_error = validation_message and ('could not' in validation_message|lower or 'error' in validation_message|lower or 'failed' in validation_message|lower) %}
-   {% set val_str = validation_html | string %}
 
    <div id="loadingOverlay" class="loading-overlay">
       <div class="loading-box">
@@ -429,7 +428,7 @@
                   </p>
                   <h2>Forecast Location</h2>
                   <form method="GET" action="{{ url_for('home') }}" class="location-form">
-                     <select name="city" onchange="showLoading('Loading forecast data for the selected city...'); this.form.submit()">
+                     <select id="dashboard-city-select" name="city" onchange="showLoading('Loading forecast data for the selected city...'); this.form.submit()">
                         {% for city in cities %}
                         <option value="{{ city }}" {% if city == selected_city %}selected{% endif %}>{{ city }}</option>
                         {% endfor %}
@@ -438,7 +437,7 @@
                   <div class="pills">
                      <div class="pill">16-day forecast horizon</div>
                      <div class="pill">Weather-driven load model</div>
-                     <div class="pill">{{ selected_city }} selected</div>
+                     <div class="pill" id="selected-city-pill">{{ selected_city }} selected</div>
                   </div>
                </div>
 
@@ -517,7 +516,7 @@
                         <input type="hidden" name="form_type" value="manual_input">
                         <div class="form-group" style="margin-bottom: 20px;">
                            <label>Select City</label>
-                           <select name="user_city" style="max-width: 300px;">
+                           <select id="manual-city-select" name="user_city" style="max-width: 300px;">
                               {% for city in cities %}
                               <option value="{{ city }}" {% if city == manual_selected_city %}selected{% endif %}>{{ city }}</option>
                               {% endfor %}
@@ -636,7 +635,7 @@
                         <input type="hidden" name="form_type" value="file_upload">
                         <div class="form-group" style="margin-bottom: 0;">
                            <label style="display: block; margin-bottom: 8px;">Select City</label>
-                           <select name="user_city" style="width: 200px;">
+                           <select id="upload-city-select" name="user_city" style="width: 200px;">
                               {% for city in cities %}
                               <option value="{{ city }}" {% if city == upload_selected_city %}selected{% endif %}>{{ city }}</option>
                               {% endfor %}
@@ -649,12 +648,46 @@
                         <button type="submit" class="btn" style="height: 46px;">Process File</button>
                      </form>
 
-                     {% if upload_message %}
+                     {% if upload_message or upload_output %}
                      <hr class="results-divider">
                      <div class="output-box" style="margin-top: 30px;">
+                        {% if upload_message %}
                         <div class="message section-message {% if upload_has_error %}message-error{% endif %}">
                            {{ upload_message }}
                         </div>
+                        {% endif %}
+
+                        {% if upload_output %}
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                           <h3 style="margin: 0;">Bulk Upload Forecast Results</h3>
+                           <a href="{{ url_for('download_file', filename=upload_selected_city + '_user_forecast.xlsx') }}"
+                              class="btn" style="text-decoration: none; padding: 10px 16px; font-size: 0.9rem; background: #10b981;">
+                              ↓ Download Excel
+                           </a>
+                        </div>
+                        <table>
+                           <thead>
+                              <tr>
+                                 <th>Date</th>
+                                 <th>Temperature (°C)</th>
+                                 <th>Wind Speed (km/h)</th>
+                                 <th>Residential Load (Wh)</th>
+                                 <th>C&amp;I Load (Wh)</th>
+                              </tr>
+                           </thead>
+                           <tbody>
+                              {% for row in upload_output %}
+                              <tr>
+                                 <td>{{ row.date }}</td>
+                                 <td>{{ row.temperature }}</td>
+                                 <td>{{ row.wind_speed }}</td>
+                                 <td>{{ "%.2f"|format(row.forecast_residential_load) }}</td>
+                                 <td>{{ "%.2f"|format(row.forecast_ci_load) }}</td>
+                              </tr>
+                              {% endfor %}
+                           </tbody>
+                        </table>
+                        {% endif %}
                      </div>
                      {% endif %}
                   </div>
@@ -672,7 +705,7 @@
                   <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; align-items: end;">
                      <div style="min-width: 200px;">
                         <label style="display:block; margin-bottom: 6px; color:#cbd5e1;">City</label>
-                        <select name="validation_city" style="width:100%; padding:12px; border-radius:12px;">
+                        <select id="validation-city-select" name="validation_city" style="width:100%; padding:12px; border-radius:12px;">
                            {% for c in cities %}
                            <option value="{{ c }}" {% if c == validation_selected_city %}selected{% endif %}>{{ c }}</option>
                            {% endfor %}
@@ -760,6 +793,23 @@
       }, 200);
    }
 
+   function resetLocationSelectorsToToronto() {
+      const ids = [
+         "dashboard-city-select",
+         "manual-city-select",
+         "upload-city-select",
+         "validation-city-select"
+      ];
+
+      ids.forEach(id => {
+         const el = document.getElementById(id);
+         if (el) el.value = "Toronto";
+      });
+
+      const pill = document.getElementById("selected-city-pill");
+      if (pill) pill.textContent = "Toronto selected";
+   }
+
    document.addEventListener("DOMContentLoaded", function () {
       const forms = document.querySelectorAll(".loading-form");
 
@@ -787,6 +837,10 @@
          });
       });
 
+      {% if not show_validation and not user_output and not upload_output and not manual_message and not upload_message and not validation_message and selected_city == 'Toronto' %}
+         resetLocationSelectorsToToronto();
+      {% endif %}
+
       {% if show_validation %}
          switchTab("tab-validation");
          scrollToSection("validation-section");
@@ -797,7 +851,7 @@
          scrollToSection("user-forecast");
          sessionStorage.removeItem("targetTab");
          sessionStorage.removeItem("scrollTarget");
-      {% elif upload_message %}
+      {% elif upload_message or upload_output %}
          switchTab("tab-user-input");
          scrollToSection("file-upload-section");
          sessionStorage.removeItem("targetTab");
