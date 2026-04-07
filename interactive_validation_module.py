@@ -6,6 +6,7 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
 
+
 def calculate_rmsp(actual, predicted):
     actual = np.array(actual, dtype=float)
     predicted = np.array(predicted, dtype=float)
@@ -14,6 +15,7 @@ def calculate_rmsp(actual, predicted):
         return 0.0
     errors = ((actual[mask] - predicted[mask]) / actual[mask]) ** 2
     return round(np.sqrt(np.mean(errors)) * 100, 4)
+
 
 def get_validation_section(location: str, start_date: str, end_date: str):
     if not all([location, start_date, end_date]):
@@ -28,7 +30,10 @@ def get_validation_section(location: str, start_date: str, end_date: str):
             usecols=["date", "res_actual", "res_predicted", "ci_actual", "ci_predicted"]
         )
     except FileNotFoundError:
-        return Markup(f'<div class="alert alert-warning">Interactive_model_validation.xlsx not found.<br>Please run validation for {location} first.</div>')
+        return Markup(
+            f'<div class="alert alert-warning">Interactive_model_validation.xlsx not found.<br>'
+            f'Please run validation for {location} first.</div>'
+        )
     except Exception as e:
         return Markup(f'<div class="alert alert-warning">Error reading validation file: {e}</div>')
 
@@ -73,25 +78,42 @@ def get_validation_section(location: str, start_date: str, end_date: str):
             mode="lines"
         )
     )
-fig_res.update_layout(
-    title=f"Residential Load Validation - {location}",
-    xaxis_title="Date",
-    yaxis_title="Residential Load (Wh)",
-    height=520,
-    template="plotly_white"
-)
-fig_res.update_xaxes(tickformat="%Y-%m-%d")
-fig_res.update_yaxes(tickformat=",.0f")
+    fig_res.update_layout(
+        title=f"Residential Load Validation - {location}",
+        xaxis_title="Date",
+        yaxis_title="Residential Load (Wh)",
+        height=520,
+        template="plotly_white"
+    )
+    fig_res.update_xaxes(tickformat="%Y-%m-%d")
+    fig_res.update_yaxes(tickformat=",.0f")
 
-fig_ci.update_layout(
-    title=f"C&I Load Validation - {location}",
-    xaxis_title="Date",
-    yaxis_title="C&I Load (Wh)",
-    height=520,
-    template="plotly_white"
-)
-fig_ci.update_xaxes(tickformat="%Y-%m-%d")
-fig_ci.update_yaxes(tickformat=",.0f")
+    fig_ci = go.Figure()
+    fig_ci.add_trace(
+        go.Scatter(
+            x=filtered_df["Date"],
+            y=filtered_df["ci_actual"],
+            name="Actual C&I Load",
+            mode="lines"
+        )
+    )
+    fig_ci.add_trace(
+        go.Scatter(
+            x=filtered_df["Date"],
+            y=filtered_df["ci_predicted"],
+            name="Predicted C&I Load",
+            mode="lines"
+        )
+    )
+    fig_ci.update_layout(
+        title=f"C&I Load Validation - {location}",
+        xaxis_title="Date",
+        yaxis_title="C&I Load (Wh)",
+        height=520,
+        template="plotly_white"
+    )
+    fig_ci.update_xaxes(tickformat="%Y-%m-%d")
+    fig_ci.update_yaxes(tickformat=",.0f")
 
     return Markup(f"""
     <div class="card">
