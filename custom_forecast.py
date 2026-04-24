@@ -29,7 +29,10 @@ def run_custom_forecast(historical_file_path, forecast_file_path):
     output_df = forecast_daily_load(res_model, ci_model, forecast_df)
 
     # Save Excel output
-    output_path = OUTPUT_DIR / "custom_forecast_output.xlsx"
+    import uuid
+    
+    filename = f"custom_forecast_{uuid.uuid4().hex}.xlsx"
+    output_path = OUTPUT_DIR / filename
     output_df.to_excel(output_path, index=False)
 
     # Create Residential plot
@@ -64,4 +67,4 @@ def run_custom_forecast(historical_file_path, forecast_file_path):
         template="plotly_white"
     )
 
-    return output_path, output_df, fig_res.to_html(full_html=False), fig_ci.to_html(full_html=False)
+    return output_path.name, output_df, fig_res.to_html(full_html=False), fig_ci.to_html(full_html=False)
