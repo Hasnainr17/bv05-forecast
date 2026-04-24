@@ -475,6 +475,27 @@
                   Forecast values below show the projected daily Residential and Commercial &amp; Industrial load
                   for {{ selected_city }} over a 16-day horizon, based on weather-driven regression output.
                </p>
+               
+               <div style="text-align: center; margin: 20px 0;">
+                  <a href="{{ url_for('download_16_day', city=selected_city) }}"
+                     class="btn"
+                     style="text-decoration: none; padding: 10px 16px; font-size: 0.95rem; background: #10b981;">
+                     ↓ Download 16-Day Forecast Excel
+                  </a>
+               </div>
+               
+               {% if forecast_res_plot %}
+               <div style="margin-top: 24px;">
+                  {{ forecast_res_plot | safe }}
+               </div>
+               {% endif %}
+               
+               {% if forecast_ci_plot %}
+               <div style="margin-top: 24px;">
+                  {{ forecast_ci_plot | safe }}
+               </div>
+               {% endif %}
+               
                <table>
                   <thead>
                      <tr>
