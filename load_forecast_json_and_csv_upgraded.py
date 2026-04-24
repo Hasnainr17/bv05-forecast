@@ -478,14 +478,16 @@ def forecast_daily_load(
     res_pred = res_model.predict(fw)
     ci_pred = ci_model.predict(fw)
 
-    out = pd.DataFrame({
-        "date": fw[DATE_COL].dt.date.astype(str),
-        "forecast_residential_load": res_pred,
-        "forecast_ci_load": ci_pred,
-        # Useful for debugging/QA:
-        "temperature": fw[TEMP_COL].to_numpy(dtype=float),
-        "wind_speed": fw[WIND_COL].to_numpy(dtype=float),
-    })
+  out = pd.DataFrame({
+      "date": fw[DATE_COL].dt.date.astype(str),
+  
+      # Convert Wh → MWh and round to 2 decimals
+      "forecast_residential_load": (res_pred / 1_000_000).round(2),
+      "forecast_ci_load": (ci_pred / 1_000_000).round(2),
+  
+      "temperature": fw[TEMP_COL].to_numpy(dtype=float),
+      "wind_speed": fw[WIND_COL].to_numpy(dtype=float),
+  })
     return out
 
 
