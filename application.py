@@ -8,6 +8,8 @@ from pathlib import Path
 from werkzeug.utils import secure_filename
 
 from user_load_forecast import run_user_forecast
+from custom_forecast import run_custom_forecast
+
 from load_forecast_json_and_csv_upgraded import (
     train_models_from_historical_csv,
     forecast_daily_load,
@@ -16,6 +18,7 @@ from load_forecast_json_and_csv_upgraded import (
     LOCATIONS,
     perform_validation
 )
+
 from interactive_validation_module import get_validation_section
 
 app = Flask(__name__)
@@ -55,7 +58,6 @@ def build_load_forecast(city):
         res_model, ci_model = train_models_from_historical_csv(hist_path)
         out_df = forecast_daily_load(res_model, ci_model, forecast_df)
 
-        # normalize for template safety
         out_df = out_df.rename(columns={
             "Date": "date",
             "temperature_2m_mean (°C)": "temperature",
@@ -65,6 +67,7 @@ def build_load_forecast(city):
         })
 
         return out_df.to_dict(orient='records')
+
     except Exception as e:
         print(f"Forecast error for {city}: {e}")
         return []
@@ -121,8 +124,15 @@ def normalize_forecast_output(df):
     for col in ["forecast_residential_load", "forecast_ci_load"]:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce").round(2)
-        
-    expected_cols = ["date", "temperature", "wind_speed", "forecast_residential_load", "forecast_ci_load"]
+
+    expected_cols = [
+        "date",
+        "temperature",
+        "wind_speed",
+        "forecast_residential_load",
+        "forecast_ci_load"
+    ]
+
     for col in expected_cols:
         if col not in df.columns:
             df[col] = ""
@@ -145,13 +155,18 @@ def home():
 
     user_output = None
     upload_output = None
+    custom_output = None
+
     input_errors = {}
 
     manual_message = None
     upload_message = None
+    custom_message = None
     validation_message = None
 
-    # default all selectors to Toronto on fresh open
+    custom_res_plot = None
+    custom_ci_plot = None
+
     manual_selected_city = "Toronto"
     upload_selected_city = "Toronto"
     validation_selected_city = "Toronto"
@@ -163,7 +178,7 @@ def home():
 
     if request.method == "POST":
         form_type = request.form.get("form_type")
-        target_filename = None
+        temp_paths = []
 
         try:
             if form_type == "manual_input":
@@ -181,6 +196,7 @@ def home():
                     d = request.form.get(f"date_{i}")
                     t = request.form.get(f"temp_{i}")
                     w = request.form.get(f"wind_{i}")
+
                     new_data.append({"date": d, "temp": t, "wind": w})
 
                     try:
@@ -218,7 +234,8 @@ def home():
                     raise ValueError("manual_input_error")
 
                 unique_id = uuid.uuid4().hex
-                target_filename = str(BASE_DIR / f"user_input_{unique_id}.xlsx")
+                target_filename = BASE_DIR / f"user_input_{unique_id}.xlsx"
+                temp_paths.append(target_filename)
 
                 df_input = pd.DataFrame({
                     "Date": date_list,
@@ -228,7 +245,7 @@ def home():
 
                 df_input.to_excel(target_filename, index=False)
 
-                output_excel_path = run_user_forecast(target_filename, manual_selected_city)
+                output_excel_path = run_user_forecast(str(target_filename), manual_selected_city)
                 df_out = pd.read_excel(output_excel_path)
                 df_out = normalize_forecast_output(df_out)
 
@@ -257,14 +274,16 @@ def home():
                     raise ValueError("upload_error")
 
                 safe_name = secure_filename(uploaded_file.filename)
-                ext = safe_name.rsplit('.', 1)[1].lower() if '.' in safe_name else 'csv'
+                ext = safe_name.rsplit('.', 1)[1].lower() if '.' in safe_name else ''
 
                 if ext not in ['csv', 'xlsx', 'xls']:
                     upload_message = f"Error for {upload_selected_city}: Only CSV or Excel files are allowed."
                     raise ValueError("upload_error")
 
                 unique_id = uuid.uuid4().hex
-                target_filename = str(BASE_DIR / f"uploaded_{unique_id}.{ext}")
+                target_filename = BASE_DIR / f"uploaded_{unique_id}.{ext}"
+                temp_paths.append(target_filename)
+
                 uploaded_file.save(target_filename)
 
                 if ext == 'csv':
@@ -277,14 +296,18 @@ def home():
                     raise ValueError("upload_error")
 
                 actual_cols = [str(col).strip() for col in df_check.columns]
-                expected_cols = ["Date", "temperature_2m_mean (°C)", "wind_speed_10m_mean (km/h)"]
+                expected_cols = [
+                    "Date",
+                    "temperature_2m_mean (°C)",
+                    "wind_speed_10m_mean (km/h)"
+                ]
                 missing_cols = [col for col in expected_cols if col not in actual_cols]
 
                 if missing_cols:
                     upload_message = f"Error for {upload_selected_city}: Missing columns: {', '.join(missing_cols)}"
                     raise ValueError("upload_error")
 
-                output_excel_path = run_user_forecast(target_filename, upload_selected_city)
+                output_excel_path = run_user_forecast(str(target_filename), upload_selected_city)
                 df_out = pd.read_excel(output_excel_path)
                 df_out = normalize_forecast_output(df_out)
 
@@ -301,16 +324,68 @@ def home():
 
                 upload_message = f"Success! Forecast generated for {upload_selected_city}."
 
+            elif form_type == "custom_forecast":
+                historical_file = request.files.get("historical_file")
+                forecast_file = request.files.get("forecast_file")
+
+                if not historical_file or historical_file.filename == "":
+                    custom_message = "Error: Please upload a historical data file."
+                    raise ValueError("custom_forecast_error")
+
+                if not forecast_file or forecast_file.filename == "":
+                    custom_message = "Error: Please upload a forecast input file."
+                    raise ValueError("custom_forecast_error")
+
+                hist_name = secure_filename(historical_file.filename)
+                forecast_name = secure_filename(forecast_file.filename)
+
+                hist_ext = hist_name.rsplit(".", 1)[1].lower() if "." in hist_name else ""
+                forecast_ext = forecast_name.rsplit(".", 1)[1].lower() if "." in forecast_name else ""
+
+                if hist_ext not in ["csv", "xlsx", "xls"] or forecast_ext not in ["csv", "xlsx", "xls"]:
+                    custom_message = "Error: Only CSV or Excel files are allowed."
+                    raise ValueError("custom_forecast_error")
+
+                unique_id = uuid.uuid4().hex
+
+                hist_path = BASE_DIR / f"custom_historical_{unique_id}.{hist_ext}"
+                forecast_path = BASE_DIR / f"custom_forecast_{unique_id}.{forecast_ext}"
+
+                temp_paths.extend([hist_path, forecast_path])
+
+                historical_file.save(hist_path)
+                forecast_file.save(forecast_path)
+
+                output_path, output_df, custom_res_plot, custom_ci_plot = run_custom_forecast(
+                    hist_path,
+                    forecast_path
+                )
+
+                df_out = normalize_forecast_output(output_df)
+
+                if df_out.empty:
+                    custom_message = "Error: Custom forecast completed but returned no rows."
+                    raise ValueError("custom_forecast_error")
+
+                custom_output = df_out.to_dict(orient="records")
+                custom_message = "Success! Custom forecast generated."
+
         except Exception as e:
-            if str(e) not in ["manual_input_error", "upload_error"]:
+            if str(e) not in ["manual_input_error", "upload_error", "custom_forecast_error"]:
                 if form_type == "manual_input":
                     manual_message = f"Error for {manual_selected_city}: {e}"
                 elif form_type == "file_upload":
                     upload_message = f"Error for {upload_selected_city}: {e}"
+                elif form_type == "custom_forecast":
+                    custom_message = f"Error: {e}"
 
         finally:
-            if target_filename and os.path.exists(target_filename):
-                os.remove(target_filename)
+            for temp_path in temp_paths:
+                try:
+                    if temp_path and os.path.exists(temp_path):
+                        os.remove(temp_path)
+                except Exception:
+                    pass
 
     min_date_str = (datetime.today() - timedelta(days=365)).strftime("%Y-%m-%d")
     max_date_str = (datetime.today() + timedelta(days=365)).strftime("%Y-%m-%d")
@@ -324,18 +399,29 @@ def home():
         today_day=today_day,
         latest_load=latest_load,
         next_day=next_day,
+
         user_output=user_output,
         upload_output=upload_output,
+        custom_output=custom_output,
+
         user_submitted_data=user_submitted_data,
         input_dates=input_dates,
         input_errors=input_errors,
+
         min_date=min_date_str,
         max_date=max_date_str,
+
         validation_html=None,
         show_validation=False,
+
         manual_message=manual_message,
         upload_message=upload_message,
+        custom_message=custom_message,
         validation_message=validation_message,
+
+        custom_res_plot=custom_res_plot,
+        custom_ci_plot=custom_ci_plot,
+
         manual_selected_city=manual_selected_city,
         upload_selected_city=upload_selected_city,
         validation_selected_city=validation_selected_city
@@ -406,18 +492,29 @@ def run_validation():
         today_day=today_day,
         latest_load=latest_load,
         next_day=next_day,
+
         validation_html=validation_html,
         show_validation=True,
+
         user_output=None,
         upload_output=None,
+        custom_output=None,
+
         user_submitted_data=user_submitted_data,
         input_dates=default_dates,
         input_errors={},
+
         min_date=(datetime.today() - timedelta(days=365)).strftime("%Y-%m-%d"),
         max_date=(datetime.today() + timedelta(days=365)).strftime("%Y-%m-%d"),
+
         manual_message=None,
         upload_message=None,
+        custom_message=None,
         validation_message=validation_message,
+
+        custom_res_plot=None,
+        custom_ci_plot=None,
+
         manual_selected_city="Toronto",
         upload_selected_city="Toronto",
         validation_selected_city=validation_selected_city
