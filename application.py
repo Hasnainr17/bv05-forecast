@@ -119,8 +119,8 @@ def normalize_forecast_output(df):
     df = df.rename(columns=rename_map)
 
     for col in ["forecast_residential_load", "forecast_ci_load"]:
-    if col in df.columns:
-        df[col] = pd.to_numeric(df[col], errors="coerce").round(2)
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce").round(2)
         
     expected_cols = ["date", "temperature", "wind_speed", "forecast_residential_load", "forecast_ci_load"]
     for col in expected_cols:
