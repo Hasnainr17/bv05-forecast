@@ -67,4 +67,4 @@ def run_custom_forecast(historical_file_path, forecast_file_path):
         template="plotly_white"
     )
 
-    return output_path.name, output_df, fig_res.to_html(full_html=False), fig_ci.to_html(full_html=False)
+    return output_path, output_df, fig_res.to_html(full_html=False), fig_ci.to_html(full_html=False)
