@@ -400,11 +400,13 @@ def home():
                 historical_file.save(hist_path)
                 forecast_file.save(forecast_path)
 
-                output_path, output_df, custom_res_plot, custom_ci_plot = run_custom_forecast(
+                filename, output_df, custom_res_plot, custom_ci_plot = run_custom_forecast(
                     hist_path,
                     forecast_path
                 )
+                
                 custom_download_file = filename
+                
                 df_out = normalize_forecast_output(output_df)
 
                 if df_out.empty:
