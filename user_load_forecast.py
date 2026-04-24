@@ -162,6 +162,13 @@ def run_user_forecast(input_file_path: str, selected_location: str):
     # -----------------------------
     forecast_df = forecast_daily_load(res_model, ci_model, df)
 
+    forecast_df = forecast_daily_load(res_model, ci_model, df)
+
+    # Convert Wh → MWh and round
+    for col in ['residential_load', 'ci_load']:
+        if col in forecast_df.columns:
+            forecast_df[col] = (forecast_df[col] / 1_000_000).round(2)
+        
     # -----------------------------
     # 6. Save output
     # -----------------------------
