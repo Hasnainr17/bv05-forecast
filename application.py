@@ -404,7 +404,7 @@ def home():
                     hist_path,
                     forecast_path
                 )
-
+                custom_download_file = filename
                 df_out = normalize_forecast_output(output_df)
 
                 if df_out.empty:
