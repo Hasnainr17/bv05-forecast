@@ -200,6 +200,7 @@ def home():
     user_output = None
     upload_output = None
     custom_output = None
+    custom_download_file = None
 
     input_errors = {}
 
@@ -404,9 +405,8 @@ def home():
                     hist_path,
                     forecast_path
                 )
-                
+
                 custom_download_file = filename
-                
                 df_out = normalize_forecast_output(output_df)
 
                 if df_out.empty:
@@ -452,6 +452,7 @@ def home():
         user_output=user_output,
         upload_output=upload_output,
         custom_output=custom_output,
+        custom_download_file=custom_download_file,
 
         user_submitted_data=user_submitted_data,
         input_dates=input_dates,
@@ -477,7 +478,7 @@ def home():
     )
 
 
-@.route("/run_validation", methods=["POST"])
+@app.route("/run_validation", methods=["POST"])
 def run_validation():
     city = request.args.get("city", "Toronto")
     if city not in CITIES:
@@ -553,6 +554,7 @@ def run_validation():
         user_output=None,
         upload_output=None,
         custom_output=None,
+        custom_download_file=None,
 
         user_submitted_data=user_submitted_data,
         input_dates=default_dates,
@@ -579,6 +581,7 @@ def run_validation():
 def download_file(filename):
     directory = BASE_DIR / "Forecasted Output"
     return send_from_directory(directory, filename, as_attachment=True)
+
 
 @app.route('/download_16_day/<city>')
 def download_16_day(city):
@@ -609,6 +612,7 @@ def download_16_day(city):
     df.to_excel(output_path, index=False)
 
     return send_from_directory(output_dir, filename, as_attachment=True)
+
 
 @app.route('/download_template')
 def download_template():
