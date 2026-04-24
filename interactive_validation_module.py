@@ -81,12 +81,12 @@ def get_validation_section(location: str, start_date: str, end_date: str):
     fig_res.update_layout(
         title=f"Residential Load Validation - {location}",
         xaxis_title="Date",
-        yaxis_title="Residential Load (Wh)",
+        yaxis_title="Residential Load (MWh)",
         height=520,
         template="plotly_white"
     )
     fig_res.update_xaxes(tickformat="%Y-%m-%d")
-    fig_res.update_yaxes(tickformat=",.0f")
+    fig_res.update_yaxes(tickformat=",.2f")
 
     fig_ci = go.Figure()
     fig_ci.add_trace(
@@ -108,12 +108,12 @@ def get_validation_section(location: str, start_date: str, end_date: str):
     fig_ci.update_layout(
         title=f"C&I Load Validation - {location}",
         xaxis_title="Date",
-        yaxis_title="C&I Load (Wh)",
+        yaxis_title="C&I Load (MWh)",
         height=520,
         template="plotly_white"
     )
     fig_ci.update_xaxes(tickformat="%Y-%m-%d")
-    fig_ci.update_yaxes(tickformat=",.0f")
+    fig_ci.update_yaxes(tickformat=",.2f")
 
     return Markup(f"""
     <div class="card">
