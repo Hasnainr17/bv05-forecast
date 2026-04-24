@@ -475,7 +475,7 @@ def home():
     )
 
 
-.route("/run_validation", methods=["POST"])
+@.route("/run_validation", methods=["POST"])
 def run_validation():
     city = request.args.get("city", "Toronto")
     if city not in CITIES:
@@ -607,37 +607,6 @@ def download_16_day(city):
     df.to_excel(output_path, index=False)
 
     return send_from_directory(output_dir, filename, as_attachment=True)
-
-@app.route('/download_16_day/<city>')
-def download_16_day(city):
-    if city not in CITIES:
-        city = "Toronto"
-
-    load_data = build_load_forecast(city)
-
-    if not load_data:
-        return f"No forecast data available for {city}", 404
-
-    df = pd.DataFrame(load_data)
-
-    df = df.rename(columns={
-        "date": "Date",
-        "temperature": "Temperature (°C)",
-        "wind_speed": "Wind Speed (km/h)",
-        "forecast_residential_load": "Residential Load (MWh)",
-        "forecast_ci_load": "C&I Load (MWh)"
-    })
-
-    output_dir = BASE_DIR / "Forecasted Output"
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    filename = f"{city}_16_day_forecast.xlsx"
-    output_path = output_dir / filename
-
-    df.to_excel(output_path, index=False)
-
-    return send_from_directory(output_dir, filename, as_attachment=True)
-
 
 @app.route('/download_template')
 def download_template():
