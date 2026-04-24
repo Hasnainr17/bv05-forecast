@@ -667,9 +667,9 @@ def perform_validation(
             chart.set_x_axis({'name': 'Date'})
     
             if target == 'Residential':
-                chart.set_y_axis({'name': 'Residential Load (Wh)'})
+                chart.set_y_axis({'name': 'Residential Load (MWh)'})
             else:
-                chart.set_y_axis({'name': 'C&I Load (Wh)'})
+                chart.set_y_axis({'name': 'C&I Load (MWh)'})
                 
             worksheet.insert_chart('G8' if i == 0 else 'G23', chart)
 
