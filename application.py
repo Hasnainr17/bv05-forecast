@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, session, send_from_directory
+\from flask import Flask, render_template, request, session, send_from_directory
 from markupsafe import Markup
 import uuid
 from datetime import datetime, timedelta
@@ -6,6 +6,7 @@ import os
 import pandas as pd
 from pathlib import Path
 from werkzeug.utils import secure_filename
+import plotly.graph_objects as go
 
 from user_load_forecast import run_user_forecast
 from custom_forecast import run_custom_forecast
@@ -71,6 +72,47 @@ def build_load_forecast(city):
     except Exception as e:
         print(f"Forecast error for {city}: {e}")
         return []
+
+
+def build_16_day_plots(load_data, city):
+    if not load_data:
+        return None, None
+
+    df = pd.DataFrame(load_data)
+
+    fig_res = go.Figure()
+    fig_res.add_trace(go.Scatter(
+        x=df["date"],
+        y=df["forecast_residential_load"],
+        mode="lines+markers",
+        name="Residential Load"
+    ))
+    fig_res.update_layout(
+        title=f"{city} 16-Day Residential Load Forecast",
+        xaxis_title="Date",
+        yaxis_title="Residential Load (MWh)",
+        height=450,
+        template="plotly_white"
+    )
+    fig_res.update_yaxes(tickformat=",.2f")
+
+    fig_ci = go.Figure()
+    fig_ci.add_trace(go.Scatter(
+        x=df["date"],
+        y=df["forecast_ci_load"],
+        mode="lines+markers",
+        name="C&I Load"
+    ))
+    fig_ci.update_layout(
+        title=f"{city} 16-Day C&I Load Forecast",
+        xaxis_title="Date",
+        yaxis_title="C&I Load (MWh)",
+        height=450,
+        template="plotly_white"
+    )
+    fig_ci.update_yaxes(tickformat=",.2f")
+
+    return fig_res.to_html(full_html=False), fig_ci.to_html(full_html=False)
 
 
 def get_forecast_summary_cards(load_data):
@@ -147,6 +189,8 @@ def home():
         city = "Toronto"
 
     load_data = build_load_forecast(city)
+    forecast_res_plot, forecast_ci_plot = build_16_day_plots(load_data, city)
+
     weather_data = build_weather(city, load_data)
     today_day, next_day, latest_load = get_forecast_summary_cards(load_data)
 
@@ -400,6 +444,9 @@ def home():
         latest_load=latest_load,
         next_day=next_day,
 
+        forecast_res_plot=forecast_res_plot,
+        forecast_ci_plot=forecast_ci_plot,
+
         user_output=user_output,
         upload_output=upload_output,
         custom_output=custom_output,
@@ -474,6 +521,8 @@ def run_validation():
         ''')
 
     load_data = build_load_forecast(city)
+    forecast_res_plot, forecast_ci_plot = build_16_day_plots(load_data, city)
+
     weather_data = build_weather(city, load_data)
     today_day, next_day, latest_load = get_forecast_summary_cards(load_data)
 
@@ -492,6 +541,9 @@ def run_validation():
         today_day=today_day,
         latest_load=latest_load,
         next_day=next_day,
+
+        forecast_res_plot=forecast_res_plot,
+        forecast_ci_plot=forecast_ci_plot,
 
         validation_html=validation_html,
         show_validation=True,
@@ -525,6 +577,37 @@ def run_validation():
 def download_file(filename):
     directory = BASE_DIR / "Forecasted Output"
     return send_from_directory(directory, filename, as_attachment=True)
+
+
+@app.route('/download_16_day/<city>')
+def download_16_day(city):
+    if city not in CITIES:
+        city = "Toronto"
+
+    load_data = build_load_forecast(city)
+
+    if not load_data:
+        return f"No forecast data available for {city}", 404
+
+    df = pd.DataFrame(load_data)
+
+    df = df.rename(columns={
+        "date": "Date",
+        "temperature": "Temperature (°C)",
+        "wind_speed": "Wind Speed (km/h)",
+        "forecast_residential_load": "Residential Load (MWh)",
+        "forecast_ci_load": "C&I Load (MWh)"
+    })
+
+    output_dir = BASE_DIR / "Forecasted Output"
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    filename = f"{city}_16_day_forecast.xlsx"
+    output_path = output_dir / filename
+
+    df.to_excel(output_path, index=False)
+
+    return send_from_directory(output_dir, filename, as_attachment=True)
 
 
 @app.route('/download_template')
