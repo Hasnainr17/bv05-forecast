@@ -1,4 +1,4 @@
-\from flask import Flask, render_template, request, session, send_from_directory
+from flask import Flask, render_template, request, session, send_from_directory
 from markupsafe import Markup
 import uuid
 from datetime import datetime, timedelta
