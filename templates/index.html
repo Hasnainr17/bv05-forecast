@@ -392,6 +392,7 @@
    {% set forecast_has_error = forecast_message and ('error' in forecast_message|lower or 'failed' in forecast_message|lower) %}
    {% set manual_has_error = manual_message and ('error' in manual_message|lower or 'failed' in manual_message|lower) %}
    {% set upload_has_error = upload_message and ('error' in upload_message|lower or 'failed' in upload_message|lower) %}
+   {% set custom_has_error = custom_message and ('error' in custom_message|lower or 'failed' in custom_message|lower) %}
    {% set validation_has_error = validation_message and ('could not' in validation_message|lower or 'error' in validation_message|lower or 'failed' in validation_message|lower) %}
 
    <div id="loadingOverlay" class="loading-overlay">
@@ -406,6 +407,7 @@
       <div class="sidebar">
          <button class="sidebar-btn active" id="btn-tab-16-day" onclick="switchTab('tab-16-day', this)">16-Day forecast</button>
          <button class="sidebar-btn" id="btn-tab-user-input" onclick="switchTab('tab-user-input', this)">User Input Forecast</button>
+         <button class="sidebar-btn" id="btn-tab-custom-forecast" onclick="switchTab('tab-custom-forecast', this)">Custom Forecast</button>
          <button class="sidebar-btn" id="btn-tab-validation" onclick="switchTab('tab-validation', this)">Data Accuracy/Validation</button>
       </div>
 
@@ -591,8 +593,8 @@
                                  <th>Date</th>
                                  <th>Temperature (°C)</th>
                                  <th>Wind Speed (km/h)</th>
-                                 <th>Residential Load (Wh)</th>
-                                 <th>C&amp;I Load (Wh)</th>
+                                 <th>Residential Load (MWh)</th>
+                                 <th>C&amp;I Load (MWh)</th>
                               </tr>
                            </thead>
                            <tbody>
@@ -671,8 +673,8 @@
             <th>Date</th>
             <th>Temperature (°C)</th>
             <th>Wind Speed (km/h)</th>
-            <th>Residential Load (Wh)</th>
-            <th>C&amp;I Load (Wh)</th>
+            <th>Residential Load (MWh)</th>
+            <th>C&amp;I Load (MWh)</th>
          </tr>
       </thead>
       <tbody>
@@ -694,7 +696,88 @@
                </div>
             </div>
          </div>
+<div id="tab-custom-forecast" class="tab-section">
+   <div class="card" id="custom-forecast-section">
+      <h2>Custom Forecast</h2>
+      <p class="section-text">
+         Upload your own historical dataset to train a custom model, then upload a forecast input file to generate Residential and C&amp;I load forecasts.
+      </p>
+      <p class="section-text">
+         Historical file must include Date, temperature, wind speed, Total Residential Consumption, and Total CI Consumption.
+      </p>
 
+      <div class="form-box">
+         <form method="POST" enctype="multipart/form-data" class="loading-form" action="{{ url_for('home') }}#custom-forecast-section">
+            <input type="hidden" name="form_type" value="custom_forecast">
+
+            <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;">
+               <div class="form-group" style="min-width: 280px;">
+                  <label style="display: block; margin-bottom: 8px;">Historical Data File (.csv, .xlsx)</label>
+                  <input type="file" name="historical_file" accept=".csv, .xlsx, .xls" required>
+               </div>
+
+               <div class="form-group" style="min-width: 280px;">
+                  <label style="display: block; margin-bottom: 8px;">Forecast Input File (.csv, .xlsx)</label>
+                  <input type="file" name="forecast_file" accept=".csv, .xlsx, .xls" required>
+               </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 22px;">
+               <button type="submit" class="btn">Run Custom Forecast</button>
+            </div>
+         </form>
+
+         {% if custom_message %}
+         <div class="message section-message {% if custom_has_error %}message-error{% endif %}" style="margin-top: 20px;">
+            {{ custom_message }}
+         </div>
+         {% endif %}
+
+         {% if custom_output %}
+         <hr class="results-divider">
+
+         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3 style="margin: 0;">Custom Forecast Results</h3>
+            <a href="{{ url_for('download_file', filename='custom_forecast_output.xlsx') }}"
+               class="btn" style="text-decoration: none; padding: 10px 16px; font-size: 0.9rem; background: #10b981;">
+               ↓ Download Excel
+            </a>
+         </div>
+
+         <table>
+            <thead>
+               <tr>
+                  <th>Date</th>
+                  <th>Temperature (°C)</th>
+                  <th>Wind Speed (km/h)</th>
+                  <th>Residential Load (MWh)</th>
+                  <th>C&amp;I Load (MWh)</th>
+               </tr>
+            </thead>
+            <tbody>
+               {% for row in custom_output %}
+               <tr>
+                  <td>{{ row.date }}</td>
+                  <td>{{ row.temperature }}</td>
+                  <td>{{ row.wind_speed }}</td>
+                  <td>{{ "%.2f"|format(row.forecast_residential_load) }}</td>
+                  <td>{{ "%.2f"|format(row.forecast_ci_load) }}</td>
+               </tr>
+               {% endfor %}
+            </tbody>
+         </table>
+
+         <div style="margin-top: 24px;">
+            {{ custom_res_plot | safe }}
+         </div>
+
+         <div style="margin-top: 24px;">
+            {{ custom_ci_plot | safe }}
+         </div>
+         {% endif %}
+      </div>
+   </div>
+</div>
          <div id="tab-validation" class="tab-section">
             <div class="card" id="validation-section">
                <h2>Interactive Model Validation</h2>
@@ -830,6 +913,10 @@
                sessionStorage.setItem("targetTab", "tab-user-input");
                sessionStorage.setItem("scrollTarget", "user-forecast");
                showLoading("Generating your custom forecast...");
+            } else if (formTypeInput && formTypeInput.value === "custom_forecast") {
+               sessionStorage.setItem("targetTab", "tab-custom-forecast");
+               sessionStorage.setItem("scrollTarget", "custom-forecast-section");
+               showLoading("Training custom model and generating forecast plots...");
             } else {
                sessionStorage.setItem("targetTab", "tab-16-day");
                showLoading("Loading updated dashboard results...");
@@ -837,7 +924,7 @@
          });
       });
 
-      {% if not show_validation and not user_output and not upload_output and not manual_message and not upload_message and not validation_message and selected_city == 'Toronto' %}
+{% if not show_validation and not user_output and not upload_output and not custom_output and not manual_message and not upload_message and not custom_message and not validation_message and selected_city == 'Toronto' %}
          resetLocationSelectorsToToronto();
       {% endif %}
 
@@ -849,6 +936,11 @@
       {% elif user_output or manual_message %}
          switchTab("tab-user-input");
          scrollToSection("user-forecast");
+         sessionStorage.removeItem("targetTab");
+         sessionStorage.removeItem("scrollTarget");
+      {% elif custom_message or custom_output %}
+         switchTab("tab-custom-forecast");
+         scrollToSection("custom-forecast-section");
          sessionStorage.removeItem("targetTab");
          sessionStorage.removeItem("scrollTarget");
       {% elif upload_message or upload_output %}
